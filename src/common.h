@@ -30,7 +30,12 @@ typedef unsigned int uint;
 // Macros for bit manipulation.
 #define BIT_SET(var, bit) ((var) |=  (1 << (bit)))
 #define BIT_CLR(var, bit) ((var) &= ~(1 << (bit)))
-#define BIT_IS_SET(var, bit) ((var & (1 << bit)) >> bit)
+#define BIT_IS_SET(var, bit) ((var) & (1 << bit))
+
+// If _SFR_ASM_COMPAT is set register names are constants and have to be casted.
+#define REG_BIT_SET(reg, bit) BIT_SET(*(volatile u8 *)(u16)(reg), bit)
+#define REG_BIT_CLR(reg, bit) BIT_CLR(*(volatile u8 *)(u16)(reg), bit)
+#define REG_BIT_IS_SET(reg, bit) BIT_IS_SET(*(volatile u8 *)(u16)(reg), bit)
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
