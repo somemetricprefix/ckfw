@@ -25,7 +25,6 @@ SRC         += $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Isrc/usb
 CPP_FLAGS    = -std=c++11
-OBJDIR       = build/obj
 
 LUFA_PATH    = lib/lufa/LUFA
 
