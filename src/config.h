@@ -1,12 +1,6 @@
 #ifndef CKFW_SRC_CONFIG_H_
 #define CKFW_SRC_CONFIG_H_
 
-// Macro used to initialize I/O ports.
-// p is the letter of the avr I/O port
-// b is the nth bit of that port.
-#define IO_PORT(p, b) \
-{ PORT##p, DDR##p, PIN##p, b }
-
 // Defines the number of rows in the keyboard matrix.
 // Maximum possible number of rows is 256.
 #define MATRIX_NUM_ROWS 4

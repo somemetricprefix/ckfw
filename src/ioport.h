@@ -17,14 +17,10 @@
 #ifndef CKFW_SRC_IOPORT_H_
 #define CKFW_SRC_IOPORT_H_
 
-// If _SFR_ASM_COMPAT is set register names are constants and have to be casted
-#define REG_BIT_SET(reg, bit) BIT_SET(*(volatile u8 *)(u16)(reg), bit)
-#define REG_BIT_CLR(reg, bit) BIT_CLR(*(volatile u8 *)(u16)(reg), bit)
-#define REG_BIT_IS_SET(reg, bit) BIT_IS_SET(*(volatile u8 *)(u16)(reg), bit)
-
-// Macro used to initialize I/O ports.
-// p is the letter of the avr I/O port
-// b is the nth bit of that port.
+// Macro expands to an initializer list that can be used to initialize
+// instances of IoPort class.
+// p - Letter of the port registers. Example: B (PORTB, DDRB, PINB)
+// b - nth bit the port register.
 #define IO_PORT(p, b) \
 { PORT##p, DDR##p, PIN##p, b }
 
@@ -34,7 +30,7 @@ class IoPort {
  public:
   // All arguments are the adress of the port registers.
   // To get constant adresses from avr-libc _SFR_ASM_COMPAT must be set to 1.
-  IoPort(u8 port, u8 ddr, u8 pin, u8 bit)
+  constexpr IoPort(u8 port, u8 ddr, u8 pin, u8 bit)
       : port_(port),
         ddr_(ddr),
         pin_(pin),
