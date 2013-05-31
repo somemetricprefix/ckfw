@@ -26,11 +26,18 @@ const IoPort Matrix::column_ports_[Matrix::kNumColumns] = { COLUMN_PORTS };
 
 Matrix::Key Matrix::matrix_[kNumRows][kNumColumns];
 
-// Number of samples it takes to change key press state.
-// A higher number increases the debounce time.
-#define DEBOUNCE_SAMPLES 4
+void Matrix::Init() {
+    for (u8 i = 0; i < kNumColumns; i++) {
+      // Configure column ports as input with pull-up.
+      column_ports_[i].PullUp();
+    }
+};
 
 void Matrix::Scan() {
+  // Number of samples it takes to change key press state.
+  // A higher number increases the debounce time.
+  const u8 kDebounceSamples = 4;
+
   for (u8 row = 0; row < kNumRows; row++) {
     SelectRow(row);
 
@@ -39,8 +46,8 @@ void Matrix::Scan() {
       // The original implementation and documentation can be found at:
       // http://www.kennethkuhn.com/electronics/debounce.c
       if (ReadColumn(col)) {
-        if ((matrix_[row][col].debounce_integrator < DEBOUNCE_SAMPLES) &&
-            (++matrix_[row][col].debounce_integrator == DEBOUNCE_SAMPLES)) {
+        if ((matrix_[row][col].debounce_integrator < kDebounceSamples) &&
+            (++matrix_[row][col].debounce_integrator == kDebounceSamples)) {
           matrix_[row][col].pressed = 1;
         }
       } else {

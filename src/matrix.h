@@ -27,12 +27,10 @@ class Matrix {
   static const u8 kNumColumns = MATRIX_NUM_COLUMNS;
 
   // Initializes the I/O ports of the matrix.
-  static inline void Init() {
-    // Configure column ports as input with pull-up.
-    for (u8 i = 0; i < kNumColumns; i++) {
-      column_ports_[i].PullUp();
-    }
-  }
+  // __attribute__((optimize("-O3"))) is used because -O3 creates proper
+  // instructions (sbi / cbi). That makes the code produced by -O3 smaller and
+  // more efficient than the code produced by -Os.
+  static void Init();// __attribute__((optimize("-O3")));
 
   // Updates the matrix with the current key states.
   static void Scan();

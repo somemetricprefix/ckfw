@@ -38,7 +38,7 @@ class IoPort {
     {}
 
   // Enable the internal pull-up resistors.
-  inline void PullUp() const {
+  inline void PullUp() const __attribute__((optimize("-O3"))) {
     REG_BIT_CLR(ddr_, bit_);
     REG_BIT_SET(port_, bit_);
   }
