@@ -16,16 +16,9 @@
 
 #include "usb.h"
 
-#include <LUFA/Drivers/USB/USB.h>
-
 #include "../common.h"
 #include "../report.h"
 #include "descriptors.h"
-
-void Usb::Init()
-{
-  USB_Init();
-}
 
 void Usb::SendReport()
 {

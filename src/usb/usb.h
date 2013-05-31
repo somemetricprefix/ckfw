@@ -17,9 +17,11 @@
 #ifndef CFKW_SRC_USB_USB_H_
 #define CFKW_SRC_USB_USB_H_
 
+#include <LUFA/Drivers/USB/USB.h>
+
 class Usb {
  public:
-  static void Init();
+  static inline void Init() { USB_Init(); };
   static void SendReport();
 };
 
