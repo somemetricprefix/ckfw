@@ -20,19 +20,11 @@
 #define _SFR_ASM_COMPAT 1
 #include <avr/io.h>
 
-Matrix::Key Matrix::matrix_[Matrix::kNumRows][Matrix::kNumColumns];
+const IoPort Matrix::row_ports_[Matrix::kNumRows] = { ROW_PORTS };
 
-#define DEFINE_ROWS
-const IoPort Matrix::row_ports_[Matrix::kNumRows] = {
-#include "config.h"
-};
-#undef DEFINE_ROWS
+const IoPort Matrix::column_ports_[Matrix::kNumColumns] = { COLUMN_PORTS };
 
-#define DEFINE_COLUMNS
-const IoPort Matrix::column_ports_[Matrix::kNumColumns] = {
-#include "config.h"
-};
-#undef DEFINE_ROWS
+Matrix::Key Matrix::matrix_[kNumRows][kNumColumns];
 
 // Number of samples it takes to change key press state.
 // A higher number increases the debounce time.
