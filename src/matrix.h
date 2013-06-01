@@ -39,7 +39,7 @@ class Matrix {
   static inline bool KeyPressed(u8 row, u8 col) {
     return matrix_[row][col].pressed;
   }
-  
+
   // Returns true if key was released in that cycle, false otherwise.
   static inline bool KeyReleased(u8 row, u8 col) {
     return matrix_[row][col].released;
@@ -51,11 +51,22 @@ class Matrix {
   }
 
  private:
+  enum DebounceStates {
+    kUpIdle = 0,
+    kDown1,
+    kDown2,
+    kDown3,
+    kDownIdle,
+    kUp1,
+    kUp2,
+    kUp3,
+  };
+
   struct Key {
+    unsigned debounce_state : 3;
     unsigned released : 1;
     unsigned pressed : 1;
     unsigned down : 1;
-    unsigned debounce_integrator : 5;
   };
 
   // Each row and column of the matrix has a dedicated IO port.

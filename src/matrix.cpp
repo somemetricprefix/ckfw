@@ -49,33 +49,73 @@ void Matrix::Scan() {
   }
 }
 
-// This debounce code is inspired by debounce.c written by Kenneth a. Kuhn
-// The original implementation and documentation can be found at:
+// Debounce routine is implemented with a state machine that models an three
+// step integrator. This function was originally based on code written by
+// Kenneth a. Kuhn that can be found at:
 // http://www.kennethkuhn.com/electronics/debounce.c
 void Matrix::Debounce(u8 row, u8 col) {
-  // Number of samples it takes to change key press state.
-  // A higher number increases the debounce time.
-  const u8 kDebounceSamples = 4;
-
+  const bool input = ReadColumn(col);
   Key &key = matrix_[row][col];
 
-  if (ReadColumn(col)) {
-    if ((key.debounce_integrator < kDebounceSamples) &&
-        (++key.debounce_integrator == kDebounceSamples)) {
-      key.pressed = true;
-      key.down = true;
-    } else {
+  switch (key.debounce_state) {
+    case kUpIdle:
+      if (input)
+        key.debounce_state = kDown1;
+      break;
+
+    case kDown1:
+      if (input)
+        key.debounce_state = kDown2;
+      else
+        key.debounce_state = kUpIdle;
+      break;
+
+    case kDown2:
+      if (input) {
+        key.pressed = true;
+        key.down = true;
+        key.debounce_state = kDown3;
+      } else {
+        key.debounce_state = kDown1;
+      }
+      break;
+
+    case kDown3:
       key.pressed = false;
+      if (input)
+        key.debounce_state = kDownIdle;
+      else
+        key.debounce_state = kDown2;
+      break;
+
+    case kDownIdle:
+      if (!input)
+        key.debounce_state = kUp1;
+      break;
+
+    case kUp1:
+      if (input)
+        key.debounce_state = kUpIdle;
+      else
+        key.debounce_state = kUp2;
+      break;
+
+    case kUp2:
+      if (input) {
+        key.debounce_state = kUp1;
+      } else {
+        key.released = true;
+        key.down = false;
+        key.debounce_state = kUp3;
+      }
+      break;
+
+    case kUp3:
       key.released = false;
-    }
-  } else {
-    if ((key.debounce_integrator > 0) &&
-        (--key.debounce_integrator == 0)) {
-      key.released = true;
-      key.down = false;
-    } else {
-      key.pressed = false;
-      key.released = false;
-    }
+      if (input)
+        key.debounce_state = kUp2;
+      else
+        key.debounce_state = kUpIdle;
+      break;
   }
 }
