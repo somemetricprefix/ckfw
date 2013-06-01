@@ -35,14 +35,27 @@ class Matrix {
   // Updates the matrix with the current key states.
   static void Scan();
 
-  static inline bool IsKeyPressed(u8 row, u8 col) {
+  // Returns true if key was pressed in that cycle, false otherwise.
+  static inline bool KeyPressed(u8 row, u8 col) {
     return matrix_[row][col].pressed;
+  }
+  
+  // Returns true if key was released in that cycle, false otherwise.
+  static inline bool KeyReleased(u8 row, u8 col) {
+    return matrix_[row][col].released;
+  }
+
+  // Returns true if key is held down, false otherwise.
+  static inline bool KeyIsDown(u8 row, u8 col) {
+    return matrix_[row][col].down;
   }
 
  private:
   struct Key {
+    unsigned released : 1;
     unsigned pressed : 1;
-    unsigned debounce_integrator : 7;
+    unsigned down : 1;
+    unsigned debounce_integrator : 5;
   };
 
   // Each row and column of the matrix has a dedicated IO port.
@@ -62,6 +75,9 @@ class Matrix {
     // level thus the logic has to be inverted here.
     return !column_ports_[col].Read();
   }
+
+  // Updates key states if a stable state is entered.
+  static void Debounce(u8 row, u8 col);
 
   static Key matrix_[kNumRows][kNumColumns];
 };

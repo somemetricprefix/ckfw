@@ -38,30 +38,44 @@ void Matrix::Init() {
 };
 
 void Matrix::Scan() {
-  // Number of samples it takes to change key press state.
-  // A higher number increases the debounce time.
-  const u8 kDebounceSamples = 4;
-
   for (u8 row = 0; row < kNumRows; row++) {
     SelectRow(row);
 
     for (u8 col = 0; col < kNumColumns; col++) {
-      // This debounce code is inspired by debounce.c written by Kenneth a. Kuhn
-      // The original implementation and documentation can be found at:
-      // http://www.kennethkuhn.com/electronics/debounce.c
-      if (ReadColumn(col)) {
-        if ((matrix_[row][col].debounce_integrator < kDebounceSamples) &&
-            (++matrix_[row][col].debounce_integrator == kDebounceSamples)) {
-          matrix_[row][col].pressed = 1;
-        }
-      } else {
-        if ((matrix_[row][col].debounce_integrator > 0) &&
-            (--matrix_[row][col].debounce_integrator == 0)) {
-          matrix_[row][col].pressed = 0;
-        }
-      }
+      Debounce(row, col);
     }
 
     DeselectRow(row);
+  }
+}
+
+// This debounce code is inspired by debounce.c written by Kenneth a. Kuhn
+// The original implementation and documentation can be found at:
+// http://www.kennethkuhn.com/electronics/debounce.c
+void Matrix::Debounce(u8 row, u8 col) {
+  // Number of samples it takes to change key press state.
+  // A higher number increases the debounce time.
+  const u8 kDebounceSamples = 4;
+
+  Key &key = matrix_[row][col];
+
+  if (ReadColumn(col)) {
+    if ((key.debounce_integrator < kDebounceSamples) &&
+        (++key.debounce_integrator == kDebounceSamples)) {
+      key.pressed = true;
+      key.down = true;
+    } else {
+      key.pressed = false;
+      key.released = false;
+    }
+  } else {
+    if ((key.debounce_integrator > 0) &&
+        (--key.debounce_integrator == 0)) {
+      key.released = true;
+      key.down = false;
+    } else {
+      key.pressed = false;
+      key.released = false;
+    }
   }
 }
