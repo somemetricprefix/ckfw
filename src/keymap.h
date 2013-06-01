@@ -14,35 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <avr/power.h>
-#include <avr/wdt.h>
+#ifndef CKFW_SRC_KEYMAP_H_
+#define CKFW_SRC_KEYMAP_H_
 
-#include "keymap.h"
+#include "common.h"
 #include "matrix.h"
-#include "report.h"
-#include "usb/usb.h"
 
-int main(void)
-{
-  // Disable watchdog if enabled by bootloader/fuses
-  BIT_CLR(MCUSR, WDRF);
-  wdt_disable();
+// Holds the keymap data specified in config.h and is the bridge between
+// Matrix and Report class.
+class Keymap {
+ public:
+  // Scans matrix for key state changes and sets adds the respective keycodes
+  // to the report that is send to the host.
+  static void MapKeys();
 
-  // Disable clock division
-  clock_prescale_set(clock_div_1);
+ private:
+  static void KeyPressed(u8 row, u8 col);
+  static void KeyReleased(u8 row, u8 col);
 
-  // Initialize usb library.
-  Usb::Init();
-  Matrix::Init();
+  static const u8 keymap_[Matrix::kNumRows][Matrix::kNumColumns];
+};
 
-  // Enable interrupts. Interrupts are required for USB.
-  sei();
-
-  for (;;) {
-    Matrix::Scan();
-    Keymap::MapKeys();
-    Usb::SendReport();
-  }
-}
+#endif // CKFW_SRC_KEYMAP_H_
