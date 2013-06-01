@@ -17,6 +17,8 @@
 #ifndef CKFW_SRC_IOPORT_H_
 #define CKFW_SRC_IOPORT_H_
 
+#include "common.h"
+
 // Macro expands to an initializer list that can be used to initialize
 // instances of IoPort class.
 // p - Letter of the port registers. Example: B (PORTB, DDRB, PINB)
