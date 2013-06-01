@@ -20,9 +20,13 @@
 #define _SFR_ASM_COMPAT 1
 #include <avr/io.h>
 
-const IoPort Matrix::row_ports_[Matrix::kNumRows] = { ROW_PORTS };
+const IoPort Matrix::row_ports_[Matrix::kNumRows] = {
+  MATRIX_ROW_PORTS
+};
 
-const IoPort Matrix::column_ports_[Matrix::kNumColumns] = { COLUMN_PORTS };
+const IoPort Matrix::column_ports_[Matrix::kNumColumns] = {
+  MATRIX_COLUMN_PORTS
+};
 
 Matrix::Key Matrix::matrix_[kNumRows][kNumColumns];
 
