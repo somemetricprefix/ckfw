@@ -25,7 +25,6 @@ class Usb {
   static void SendReport();
 };
 
-
 extern "C" {
   void EVENT_USB_Device_ConfigurationChanged(void);
 }

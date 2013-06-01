@@ -27,8 +27,8 @@ void Usb::SendReport()
 
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
 
-  if (!Endpoint_IsReadWriteAllowed())
-    return;
+  // Wait for IN Request
+  while (!Endpoint_IsReadWriteAllowed());
 
   // Get and write report data
   Endpoint_Write_Stream_LE(Report::get_data(), Report::kDataSize, NULL);
