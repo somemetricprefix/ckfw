@@ -30,7 +30,7 @@ class Matrix {
   // __attribute__((optimize("-O3"))) is used because -O3 creates proper
   // instructions (sbi / cbi). That makes the code produced by -O3 smaller and
   // more efficient than the code produced by -Os.
-  static void Init();// __attribute__((optimize("-O3")));
+  static void Init() __attribute__((optimize("-O3")));
 
   // Updates the matrix with the current key states.
   static void Scan();
