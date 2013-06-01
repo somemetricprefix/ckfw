@@ -33,8 +33,10 @@ Similar Projects
 License
 -------
 
-Code of this project is licensed under the ISC license.
-LUFA has its own license.
+Code of this project is licensed under the ISC license. Some files which were
+taken or modified from other projects have other licenses. The used license is
+documented at the beginning of each file. The libraries in lib/ have their own
+license respectively.
 
 [c++-style]: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
