@@ -14,37 +14,42 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "matrix.h"
+#ifndef CKFW_SRC_KEY_H_
+#define CKFW_SRC_KEY_H_
 
-// This tell avr-libc to use constant definitions for IO names
-#define _SFR_ASM_COMPAT 1
-#include <avr/io.h>
+class Key {
+ public:
+  void Debounce(bool input);
 
-const IoPort Matrix::row_ports_[Matrix::kNumRows] = {
-  MATRIX_ROW_PORTS
-};
-
-const IoPort Matrix::column_ports_[Matrix::kNumColumns] = {
-  MATRIX_COLUMN_PORTS
-};
-
-Key Matrix::matrix_[kNumRows][kNumColumns];
-
-void Matrix::Init() {
-    for (u8 i = 0; i < kNumColumns; i++) {
-      // Configure column ports as input with pull-up.
-      column_ports_[i].PullUp();
-    }
-};
-
-void Matrix::Scan() {
-  for (u8 row = 0; row < kNumRows; row++) {
-    SelectRow(row);
-
-    for (u8 col = 0; col < kNumColumns; col++) {
-      Debounce(row, col);
-    }
-
-    DeselectRow(row);
+  // Returns true if key was pressed in that cycle, false otherwise.
+  inline bool Pressed() const {
+    return debounce_state == DebounceStates::kPressed;
   }
-}
+
+  // Returns true if key was released in that cycle, false otherwise.
+  inline bool Released() const {
+    return debounce_state == DebounceStates::kReleased;
+  }
+
+  // Returns true if key is held down, false otherwise.
+  inline bool IsDown() const {
+    return down;
+  }
+
+ private:
+  enum DebounceStates {
+    kUpIdle,
+    kDown1,
+    kDown2,
+    kPressed,
+    kDownIdle,
+    kUp1,
+    kUp2,
+    kReleased,
+  };
+
+  unsigned debounce_state : 3;
+  unsigned down : 1;
+};
+
+#endif // CKFW_SRC_KEY_H_

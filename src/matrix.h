@@ -20,6 +20,7 @@
 #include "common.h"
 #include "config.h"
 #include "ioport.h"
+#include "key.h"
 
 class Matrix {
  public:
@@ -35,38 +36,11 @@ class Matrix {
   // Updates the matrix with the current key states.
   static void Scan();
 
-  // Returns true if key was pressed in that cycle, false otherwise.
-  static inline bool KeyPressed(u8 row, u8 col) {
-    return matrix_[row][col].debounce_state == kPressed;
-  }
-
-  // Returns true if key was released in that cycle, false otherwise.
-  static inline bool KeyReleased(u8 row, u8 col) {
-    return matrix_[row][col].debounce_state == kReleased;
-  }
-
-  // Returns true if key is held down, false otherwise.
-  static inline bool KeyIsDown(u8 row, u8 col) {
-    return matrix_[row][col].down;
+  static inline Key *GetKey(u8 row, u8 col) {
+    return &matrix_[row][col];
   }
 
  private:
-  enum DebounceStates {
-    kUpIdle,
-    kDown1,
-    kDown2,
-    kPressed,
-    kDownIdle,
-    kUp1,
-    kUp2,
-    kReleased,
-  };
-
-  struct Key {
-    unsigned debounce_state : 3;
-    unsigned down : 1;
-  };
-
   // Each row and column of the matrix has a dedicated IO port.
   // Port definitions are in config.h
   static const IoPort row_ports_[kNumRows];
@@ -86,7 +60,10 @@ class Matrix {
   }
 
   // Updates key states if a stable state is entered.
-  static void Debounce(u8 row, u8 col);
+  static inline void Debounce(u8 row, u8 col) {
+    const bool input = ReadColumn(col);
+    matrix_[row][col].Debounce(input);
+  };
 
   static Key matrix_[kNumRows][kNumColumns];
 };

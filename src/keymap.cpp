@@ -17,6 +17,7 @@
 #include "keymap.h"
 
 #include "config.h"
+#include "key.h"
 #include "keycodes.h"
 #include "report.h"
 
@@ -29,11 +30,10 @@ const u8 Keymap::keymap_[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
 void Keymap::MapKeys() {
   for (u8 row = 0; row < Matrix::kNumRows; row++) {
     for (u8 col = 0; col < Matrix::kNumColumns; col++) {
-      if (Matrix::KeyPressed(row, col)) {
-        //Report::AddKeycode(keymap_[row][col]);
+      const Key *key = Matrix::GetKey(row, col);
+      if (key->Pressed()) {
         KeyPressed(row, col);
-      } else if (Matrix::KeyReleased(row, col)) {
-        //Report::RemoveKeycode(keymap_[row][col]);
+      } else if (key->Released()) {
         KeyReleased(row, col);
       }
     }
