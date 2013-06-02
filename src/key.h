@@ -31,12 +31,14 @@ class Key {
   // Has to be called after Debounce().
   void UpdateTapState();
 
-  // Returns true if key was pressed in that cycle, false otherwise.
+  // Returns true if a key changed from up posistin to down position, false
+  // otherwise.
   inline bool Pressed() const {
     return debounce_state == DebounceStates::kPressed;
   }
 
-  // Returns true if key was released in that cycle, false otherwise.
+  // Returns true if a key changed from up posistin to down position, false
+  // otherwise.
   inline bool Released() const {
     return debounce_state == DebounceStates::kReleased;
   }
@@ -46,7 +48,10 @@ class Key {
     return down;
   }
 
-  // Returns true if a key tap was detected, false otherwise.
+  // Returns true if a key tap was detected, false otherwise. A keytap is
+  // always detected when a key was pressed and released within a short period
+  // of time. Therefor a key tap is always detected in the same cycle the key is
+  // released.
   inline bool Tapped() const {
     return tap_state == TapStates::kTap;
   }
