@@ -59,12 +59,6 @@ class Matrix {
     return !column_ports_[col].Read();
   }
 
-  // Updates key states if a stable state is entered.
-  static inline void Debounce(u8 row, u8 col) {
-    const bool input = ReadColumn(col);
-    matrix_[row][col].Debounce(input);
-  };
-
   static Key matrix_[kNumRows][kNumColumns];
 };
 

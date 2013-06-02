@@ -19,17 +19,22 @@
 
 #include "common.h"
 
+// Holds different states of a key.
+// States are updated in cycles therefore all functions that return a key
+// state are only true for the last cycle.
 class Key {
  public:
+  // Updates all key states according to the input on the pin for that key.
+  // This method must be called every ms, so that debounce and tap timing
+  // is accurate.
+  inline void Update(bool input) {
+    Debounce(input);
+    UpdateTapState();
+  };
+
   // A key press and release within kTapThreshold ms is interpreted as tap.
   // Maximum value is 255 because this is a unsigned 8bit value.
   static const u8 kTapThreshold = 200;
-
-  // Updates key states if a stable state is entered.
-  void Debounce(bool input);
-
-  // Has to be called after Debounce().
-  void UpdateTapState();
 
   // Returns true if a key changed from up posistin to down position, false
   // otherwise.
@@ -73,6 +78,12 @@ class Key {
     kWait,
     kTap,
   };
+
+  // Updates key states if a stable state is entered.
+  void Debounce(bool input);
+
+  // Has to be called after Debounce().
+  void UpdateTapState();
 
   unsigned debounce_state : 3;
   unsigned down : 1;
