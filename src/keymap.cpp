@@ -41,9 +41,13 @@ void Keymap::MapKeys() {
 }
 
 void Keymap::KeyPressed(u8 row, u8 col) {
-  Report::AddKeycode(keymap_[row][col]);
+  const u8 keycode = keymap_[row][col];
+  if (keycode)
+    Report::AddKeycode(keycode);
 }
 
 void Keymap::KeyReleased(u8 row, u8 col) {
-  Report::RemoveKeycode(keymap_[row][col]);
+  const u8 keycode = keymap_[row][col];
+  if (keycode)
+    Report::RemoveKeycode(keycode);
 }
