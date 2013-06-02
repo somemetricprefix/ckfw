@@ -37,12 +37,12 @@ class Matrix {
 
   // Returns true if key was pressed in that cycle, false otherwise.
   static inline bool KeyPressed(u8 row, u8 col) {
-    return matrix_[row][col].pressed;
+    return matrix_[row][col].debounce_state == kPressed;
   }
 
   // Returns true if key was released in that cycle, false otherwise.
   static inline bool KeyReleased(u8 row, u8 col) {
-    return matrix_[row][col].released;
+    return matrix_[row][col].debounce_state == kReleased;
   }
 
   // Returns true if key is held down, false otherwise.
@@ -52,20 +52,18 @@ class Matrix {
 
  private:
   enum DebounceStates {
-    kUpIdle = 0,
+    kUpIdle,
     kDown1,
     kDown2,
-    kDown3,
+    kPressed,
     kDownIdle,
     kUp1,
     kUp2,
-    kUp3,
+    kReleased,
   };
 
   struct Key {
     unsigned debounce_state : 3;
-    unsigned released : 1;
-    unsigned pressed : 1;
     unsigned down : 1;
   };
 

@@ -72,20 +72,18 @@ void Matrix::Debounce(u8 row, u8 col) {
 
     case kDown2:
       if (input) {
-        key.pressed = true;
         key.down = true;
-        key.debounce_state = kDown3;
+        key.debounce_state = kPressed;
       } else {
         key.debounce_state = kDown1;
       }
       break;
 
-    case kDown3:
-      key.pressed = false;
+    case kPressed:
       if (input)
         key.debounce_state = kDownIdle;
       else
-        key.debounce_state = kDown2;
+        key.debounce_state = kUp1;
       break;
 
     case kDownIdle:
@@ -95,7 +93,7 @@ void Matrix::Debounce(u8 row, u8 col) {
 
     case kUp1:
       if (input)
-        key.debounce_state = kUpIdle;
+        key.debounce_state = kDownIdle;
       else
         key.debounce_state = kUp2;
       break;
@@ -104,16 +102,14 @@ void Matrix::Debounce(u8 row, u8 col) {
       if (input) {
         key.debounce_state = kUp1;
       } else {
-        key.released = true;
         key.down = false;
-        key.debounce_state = kUp3;
+        key.debounce_state = kReleased;
       }
       break;
 
-    case kUp3:
-      key.released = false;
+    case kReleased:
       if (input)
-        key.debounce_state = kUp2;
+        key.debounce_state = kDown1;
       else
         key.debounce_state = kUpIdle;
       break;
