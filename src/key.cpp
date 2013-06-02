@@ -63,3 +63,32 @@ void Key::Debounce(bool input) {
       break;
   }
 }
+
+void Key::UpdateTapState() {
+  switch (tap_state) {
+    case TapStates::kIdle:
+      if (Pressed())
+        tap_state = TapStates::kWait;
+      break;
+
+    case TapStates::kWait:
+      if (tap_cycle <= kTapThreshold) {
+        if (Released())
+          tap_state = TapStates::kTap;
+        else
+          tap_cycle++;
+      } else {
+        tap_cycle = 0;
+        tap_state = TapStates::kIdle;
+      }
+      break;
+
+    case TapStates::kTap:
+      tap_cycle = 0;
+      if (Pressed())
+        tap_state = TapStates::kWait;
+      else
+        tap_state = TapStates::kIdle;
+      break;
+  }
+}

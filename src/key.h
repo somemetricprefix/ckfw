@@ -17,9 +17,19 @@
 #ifndef CKFW_SRC_KEY_H_
 #define CKFW_SRC_KEY_H_
 
+#include "common.h"
+
 class Key {
  public:
+  // A key press and release within kTapThreshold ms is interpreted as tap.
+  // Maximum value is 255 because this is a unsigned 8bit value.
+  static const u8 kTapThreshold = 200;
+
+  // Updates key states if a stable state is entered.
   void Debounce(bool input);
+
+  // Has to be called after Debounce().
+  void UpdateTapState();
 
   // Returns true if key was pressed in that cycle, false otherwise.
   inline bool Pressed() const {
@@ -36,6 +46,11 @@ class Key {
     return down;
   }
 
+  // Returns true if a key tap was detected, false otherwise.
+  inline bool Tapped() const {
+    return tap_state == TapStates::kTap;
+  }
+
  private:
   enum DebounceStates {
     kUpIdle,
@@ -48,8 +63,18 @@ class Key {
     kReleased,
   };
 
+  enum TapStates {
+    kIdle,
+    kWait,
+    kTap,
+  };
+
   unsigned debounce_state : 3;
   unsigned down : 1;
+  unsigned tap_state : 2;
+
+  // Tracks for how many cycles a key has been in down or up position.
+  u8 tap_cycle;
 };
 
 #endif // CKFW_SRC_KEY_H_
