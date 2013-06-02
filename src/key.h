@@ -85,6 +85,9 @@ class Key {
   // Has to be called after Debounce().
   void UpdateTapState();
 
+  // HACKME: Using a bitfield here reduces size in data section but increases
+  // program code because GCC doesn't create very efficient code.
+  // Find a memory layout that is a good compromise between data and code size.
   unsigned debounce_state : 3;
   unsigned down : 1;
   unsigned tap_state : 2;
