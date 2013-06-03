@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_IOPORT_H_
-#define CKFW_SRC_IOPORT_H_
+#ifndef CKFW_SRC_CORE_IOPORT_H_
+#define CKFW_SRC_CORE_IOPORT_H_
 
 #include "common.h"
 
@@ -71,4 +71,4 @@ class IoPort {
   DISALLOW_COPY_AND_ASSIGN(IoPort);
 };
 
-#endif // CKFW_SRC_IOPORT_H_
+#endif // CKFW_SRC_CORE_IOPORT_H_

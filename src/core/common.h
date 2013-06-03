@@ -16,8 +16,8 @@
 
 // This header contains usefull typedefs and macros which are used throughout
 // the whole projet.
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef CKFW_SRC_CORE_COMMON_H
+#define CKFW_SRC_CORE_COMMON_H
 
 // Shorthand for common types.
 typedef   signed char s8;
@@ -50,4 +50,4 @@ typedef unsigned int uint;
     PORTB |= (1 << 6); \
   }
 
-#endif // COMMON_H
+#endif // CKFW_SRC_CORE_COMMON_H

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_MATRIX_H_
-#define CKFW_SRC_MATRIX_H_
+#ifndef CKFW_SRC_CORE_MATRIX_H_
+#define CKFW_SRC_CORE_MATRIX_H_
 
 #include "common.h"
 #include "config.h"
@@ -62,4 +62,4 @@ class Matrix {
   static Key matrix_[kNumRows][kNumColumns];
 };
 
-#endif //CKFW_SRC_MATRIX_H_
+#endif //CKFW_SRC_CORE_MATRIX_H_

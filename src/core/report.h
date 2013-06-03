@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_REPORT_H_
-#define CKFW_SRC_REPORT_H_
+#ifndef CKFW_SRC_CORE_REPORT_H_
+#define CKFW_SRC_CORE_REPORT_H_
 
 #include "common.h"
 
@@ -48,4 +48,4 @@ class Report {
   static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
 };
 
-#endif // CKFW_SRC_REPORT_H_
+#endif // CKFW_SRC_CORE_REPORT_H_

@@ -1,8 +1,8 @@
 // Most code in this file is taken from t.m.k Keyboard Keyboard Project
 // (https://github.com/tmk/tmk_keyboard) and is therefore licensed under GPL.
 
-#ifndef CKFW_SRC_KEYCODES_H_
-#define CKFW_SRC_KEYCODES_H_
+#ifndef CKFW_SRC_CORE_KEYCODES_H_
+#define CKFW_SRC_CORE_KEYCODES_H_
 
 /*
  * Short names for ease of definition of keymap
@@ -245,4 +245,4 @@ enum kKeyCodes {
   KC_RGUI,
 };
 
-#endif // CKFW_SRC_KEYCODES_H_
+#endif // CKFW_SRC_CORE_KEYCODES_H_

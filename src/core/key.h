@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_KEY_H_
-#define CKFW_SRC_KEY_H_
+#ifndef CKFW_SRC_CORE_KEY_H_
+#define CKFW_SRC_CORE_KEY_H_
 
 #include "common.h"
 
@@ -98,4 +98,4 @@ class Key {
   u8 tap_cycle_;
 };
 
-#endif // CKFW_SRC_KEY_H_
+#endif // CKFW_SRC_CORE_KEY_H_
