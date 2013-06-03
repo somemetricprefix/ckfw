@@ -42,7 +42,6 @@ int main(void)
 
   for (;;) {
     Matrix::Scan();
-    Keymap::MapKeys();
     Usb::SendReport();
   }
 }

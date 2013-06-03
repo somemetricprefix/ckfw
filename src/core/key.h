@@ -91,9 +91,8 @@ class Key {
   // Find a memory layout that is a good compromise between data and code size.
   unsigned debounce_state_ : 3;
   unsigned down_ : 1;
+  unsigned context_ : 3;
   unsigned tap_state_ : 2;
-
-  unsigned context_ : 2;
 
   // Tracks for how many cycles a key has been in down or up position.
   u8 tap_cycle_;
