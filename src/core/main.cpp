@@ -19,10 +19,15 @@
 #include <avr/power.h>
 #include <avr/wdt.h>
 
-#include "keymap.h"
 #include "matrix.h"
 #include "report.h"
 #include "usb/usb.h"
+
+__attribute__((weak))
+void Init() {}
+
+__attribute__((weak))
+void Update() {}
 
 int main(void)
 {
@@ -37,11 +42,14 @@ int main(void)
   Usb::Init();
   Matrix::Init();
 
+  Init();
+
   // Enable interrupts. Interrupts are required for USB.
   sei();
 
   for (;;) {
     Matrix::Scan();
+    Update();
     Usb::SendReport();
   }
 }
