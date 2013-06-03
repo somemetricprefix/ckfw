@@ -4,7 +4,7 @@ BOARD        = TEENSY2
 F_CPU        = 16000000
 F_USB        = $(F_CPU)
 
-CPP_FLAGS   += -std=c++11
+CPP_FLAGS   += -std=c++11 -include $(CONFIG_H)
 
 include $(CKFW_PATH)/src/core/core.mk
 
