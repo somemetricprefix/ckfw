@@ -17,9 +17,9 @@
 #include "keymap.h"
 
 #include "config.h"
-#include "key.h"
-#include "keycodes.h"
-#include "report.h"
+#include "core/key.h"
+#include "core/keycodes.h"
+#include "core/report.h"
 
 const u8 Keymap::keymap_[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
 

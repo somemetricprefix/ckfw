@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_KEYMAP_H_
-#define CKFW_SRC_KEYMAP_H_
+#ifndef CKFW_SRC_KEYBOARD_KEYMAP_H_
+#define CKFW_SRC_KEYBOARD_KEYMAP_H_
 
-#include "common.h"
-#include "matrix.h"
+#include "core/common.h"
+#include "core/matrix.h"
 
 // Holds the keymap data specified in config.h and is the bridge between
 // Matrix and Report class.
