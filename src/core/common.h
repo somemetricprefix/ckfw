@@ -43,11 +43,4 @@ typedef unsigned int uint;
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
-// TODO: make it usefull
-#define ASSERT(cond) \
-  if (!cond) { \
-    DDRB |= (1 << 6); \
-    PORTB |= (1 << 6); \
-  }
-
 #endif // CKFW_SRC_CORE_COMMON_H

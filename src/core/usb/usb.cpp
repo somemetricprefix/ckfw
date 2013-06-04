@@ -17,11 +17,16 @@
 #include "usb.h"
 
 #include "../common.h"
-#include "../report.h"
 #include "descriptors.h"
 
-void Usb::SendReport()
-{
+// HID Specification 1.11:
+// "The recommended default idle rate (rate when the device is initialized) is
+// 500 milliseconds for keyboards (delay before first repeat rate)"
+u16 Usb::idle_time_ = 500;
+u16 Usb::idle_time_remaining_ = 0;
+u8 Usb::prev_data_[] = { 0 };
+
+void Usb::SendReport() {
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 
@@ -30,18 +35,27 @@ void Usb::SendReport()
   // Wait for IN Request
   while (!Endpoint_IsReadWriteAllowed());
 
-  // Get and write report data
-  Endpoint_Write_Stream_LE(Report::get_data(), Report::kDataSize, NULL);
+  void *curr_data = Report::get_data();
+  bool send_data = false;
+  // Send report to host if either report has changed...
+  if (memcmp(prev_data_, curr_data, Report::kDataSize)) {
+    // Get new report.
+    memcpy(prev_data_, curr_data, Report::kDataSize);
+    send_data = true;
+  // ... or idle time is over.
+  } else if (idle_time_remaining_++ < idle_time_) {
+    // Just send the same report again.
+    send_data = true;
+  }
+
+  if (send_data) {
+    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
+    idle_time_remaining_ = 0;
+  }
 
   // Finalize stream
   Endpoint_ClearIN();
 }
-
-// Current idle period in ms. This is set by the host via a Set Idle HID class
-// request to silence the device's reports for either the entire idle duration,
-// or until the report status changes (e.g. the user presses a key).
-// For now this is ignored and reports are send whenever possible.
-static u16 idle_time = 0;
 
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
@@ -58,46 +72,40 @@ void EVENT_USB_Device_ControlRequest(void)
   switch (USB_ControlRequest.bRequest)
   {
     case HID_REQ_GetReport:
-      ASSERT(USB_ControlRequest.bmRequestType ==
-                 (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE));
+      if (USB_ControlRequest.bmRequestType ==
+          (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE)) {
+        Endpoint_ClearSETUP();
 
-      Endpoint_ClearSETUP();
+        // Write the report data to the control endpoint
+        // The functions waits for the host to enter the status stage
+        Endpoint_Write_Control_Stream_LE(Report::get_data(), Report::kDataSize);
 
-      // Write the report data to the control endpoint
-      // The functions waits for the host to enter the status stage
-      Endpoint_Write_Control_Stream_LE(Report::get_data(), Report::kDataSize);
-
-      // Manually clear the status stage
-      Endpoint_ClearOUT();
-
+        // Manually clear the status stage
+        Endpoint_ClearOUT();
+      }
       break;
 
     case HID_REQ_SetIdle:
-      ASSERT(USB_ControlRequest.bmRequestType ==
-                 (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE));
+      if (USB_ControlRequest.bmRequestType ==
+          (REQDIR_HOSTTODEVICE | REQTYPE_CLASS | REQREC_INTERFACE)) {
+        Endpoint_ClearSETUP();
+        Endpoint_ClearStatusStage();
 
-      Endpoint_ClearSETUP();
-      Endpoint_ClearStatusStage();
-
-      // Get idle period in MSB, IdleCount must be multiplied by 4 to get number
-      // of milliseconds
-      idle_time = ((USB_ControlRequest.wValue & 0xFF00) / 8);
-
+        // Get idle period in MSB.
+        Usb::set_idle_time(USB_ControlRequest.wValue >> 8);
+      }
       break;
 
     case HID_REQ_GetIdle:
-      ASSERT(USB_ControlRequest.bmRequestType ==
-                 (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE));
+      if (USB_ControlRequest.bmRequestType ==
+          (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE)) {
+        Endpoint_ClearSETUP();
 
-      Endpoint_ClearSETUP();
+        Endpoint_Write_8(Usb::idle_time());
 
-      // Write the current idle duration to the host, must be divided by 4
-      // before sent to host
-      Endpoint_Write_8(idle_time / 4);
-
-      Endpoint_ClearIN();
-      Endpoint_ClearStatusStage();
-
+        Endpoint_ClearIN();
+        Endpoint_ClearStatusStage();
+      }
       break;
   }
 }
