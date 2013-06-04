@@ -25,8 +25,6 @@
 void Update() {
   Keymap::MapKeys();
 
-  Report::AddKeycode(0x04);
-
   TapKey tap_key(Matrix::GetKey(3, 6), KC_BSPACE, KC_RSHIFT);
   tap_key.Update(false);
 }

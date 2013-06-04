@@ -43,7 +43,7 @@ void Matrix::Scan() {
 
     for (u8 col = 0; col < kNumColumns; col++) {
       const bool input = ReadColumn(col);
-      matrix_[row][col].Update(input);
+      matrix_[row][col].Debounce(input);
     }
 
     DeselectRow(row);

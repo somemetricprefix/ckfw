@@ -24,12 +24,8 @@
 // state are only true for the last cycle.
 class Key {
  public:
-  // Updates all key states according to the input on the pin for that key.
-  // This method must be called every ms, so that debounce and tap timing
-  // is accurate.
-  inline void Update(bool input) {
-    Debounce(input);
-  };
+  // Updates key state when input is stable.
+  void Debounce(bool input);
 
   // Returns true if a key changed from up posistin to down position, false
   // otherwise.
@@ -63,14 +59,11 @@ class Key {
     kReleased,
   };
 
-  // Updates key states if a stable state is entered.
-  void Debounce(bool input);
-
   // HACKME: Using a bitfield here reduces size in data section but increases
   // program code because GCC doesn't create very efficient code.
   // Find a memory layout that is a good compromise between data and code size.
-  unsigned debounce_state_ : 3;
-  unsigned down_ : 1;
+  u8 debounce_state_;
+  bool down_;
   u16 context_;
 };
 
