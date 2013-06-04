@@ -7,6 +7,7 @@ F_USB        = $(F_CPU)
 CPP_FLAGS   += -std=c++11 -include $(CONFIG_H) -I$(CKFW_PATH)/src
 
 include $(CKFW_PATH)/src/core/core.mk
+include $(CKFW_PATH)/src/util/util.mk
 
 LUFA_PATH = $(CKFW_PATH)/lib/lufa/LUFA
 include $(LUFA_PATH)/Build/lufa_core.mk
