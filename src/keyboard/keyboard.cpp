@@ -16,15 +16,25 @@
 
 #include "core/matrix.h"
 #include "core/keycodes.h"
+#include "core/report.h"
 #include "util/tapkey.h"
 
-#include "keymap.h"
-
-#include "core/report.h"
+static const u8 keymap[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
 
 void Update() {
-  Keymap::MapKeys();
+  u8 num_keys_pressed = 0;
+  for (u8 row = 0; row < Matrix::kNumRows; row++) {
+    for (u8 col = 0; col < Matrix::kNumColumns; col++) {
+      const Key *key = Matrix::GetKey(row, col);
+      if (key->Pressed()) {
+        Report::AddKeycode(keymap[row][col]);
+        num_keys_pressed++;
+      } else if (key->Released()) {
+        Report::RemoveKeycode(keymap[row][col]);
+      }
+    }
+  }
 
   TapKey tap_key(Matrix::GetKey(3, 6), KC_BSPACE, KC_RSHIFT);
-  tap_key.Update(false);
+  tap_key.Update(num_keys_pressed);
 }
