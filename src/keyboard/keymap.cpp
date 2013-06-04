@@ -16,10 +16,11 @@
 
 #include "keymap.h"
 
-#include "config.h"
 #include "core/key.h"
 #include "core/keycodes.h"
 #include "core/report.h"
+
+#include "config.h"
 
 const u8 Keymap::keymap_[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
 

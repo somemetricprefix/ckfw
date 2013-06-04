@@ -14,8 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "core/matrix.h"
+#include "core/keycodes.h"
+#include "util/tapkey.h"
+
 #include "keymap.h"
+
+#include "core/report.h"
 
 void Update() {
   Keymap::MapKeys();
+
+  Report::AddKeycode(0x04);
+
+  TapKey tap_key(Matrix::GetKey(3, 6), KC_BSPACE, KC_RSHIFT);
+  tap_key.Update(false);
 }

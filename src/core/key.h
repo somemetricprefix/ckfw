@@ -29,12 +29,7 @@ class Key {
   // is accurate.
   inline void Update(bool input) {
     Debounce(input);
-    UpdateTapState();
   };
-
-  // A key press and release within kTapThreshold ms is interpreted as tap.
-  // Maximum value is 255 because this is a unsigned 8bit value.
-  static const u8 kTapThreshold = 200;
 
   // Returns true if a key changed from up posistin to down position, false
   // otherwise.
@@ -51,16 +46,10 @@ class Key {
   // Returns true if key is held down, false otherwise.
   inline bool IsDown() const { return down_; }
 
-  // Returns true if a key tap was detected, false otherwise. A keytap is
-  // always detected when a key was pressed and released within a short period
-  // of time. Therefor a key tap is always detected in the same cycle the key is
-  // released.
-  inline bool Tapped() const { return tap_state_ == TapStates::kTap; }
-
   // context is per key variable that can be set from outside to track key
   // states over more than one cycle.
-  inline u8 get_context() const { return context_; }
-  inline void set_context(u8 context) { context_ = context; }
+  inline u16 get_context() const { return context_; }
+  inline void set_context(u16 context) { context_ = context; }
 
  private:
   enum DebounceStates {
@@ -74,28 +63,15 @@ class Key {
     kReleased,
   };
 
-  enum TapStates {
-    kIdle,
-    kWait,
-    kTap,
-  };
-
   // Updates key states if a stable state is entered.
   void Debounce(bool input);
-
-  // Has to be called after Debounce().
-  void UpdateTapState();
 
   // HACKME: Using a bitfield here reduces size in data section but increases
   // program code because GCC doesn't create very efficient code.
   // Find a memory layout that is a good compromise between data and code size.
   unsigned debounce_state_ : 3;
   unsigned down_ : 1;
-  unsigned context_ : 3;
-  unsigned tap_state_ : 2;
-
-  // Tracks for how many cycles a key has been in down or up position.
-  u8 tap_cycle_;
+  u16 context_;
 };
 
 #endif // CKFW_SRC_CORE_KEY_H_
