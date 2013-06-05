@@ -120,8 +120,8 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.TotalEndpoints         = 1,
 
 			.Class                  = HID_CSCP_HIDClass,
-			.SubClass               = HID_CSCP_BootSubclass,
-			.Protocol               = HID_CSCP_KeyboardBootProtocol,
+			.SubClass               = HID_CSCP_NonBootSubclass,
+			.Protocol               = HID_CSCP_NonBootProtocol,
 
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
