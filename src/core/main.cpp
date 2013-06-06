@@ -53,6 +53,7 @@ int main(void)
       Matrix::Scan();
       Tick();
       Usb::SendReport();
+      Usb::Update();
     }
 
     sleep_mode();

@@ -35,12 +35,18 @@
 		 */
 		typedef struct
 		{
-			USB_Descriptor_Configuration_Header_t Config;
+			USB_Descriptor_Configuration_Header_t config;
 
 			// Keyboard HID Interface
-			USB_Descriptor_Interface_t            HID_Interface;
-			USB_HID_Descriptor_HID_t              HID_KeyboardHID;
-			USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
+			USB_Descriptor_Interface_t            keyboard_interface;
+			USB_HID_Descriptor_HID_t              keyboard_hid;
+			USB_Descriptor_Endpoint_t             keyboard_endpoint;
+
+			// Console HID Interface
+			USB_Descriptor_Interface_t            console_interface;
+			USB_HID_Descriptor_HID_t              console_hid;
+			USB_Descriptor_Endpoint_t             console_in_endpoint;
+			USB_Descriptor_Endpoint_t             console_out_endpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
@@ -54,12 +60,14 @@
 		    STRING_ID_Product       = 2, /**< Product string ID */
 		};
 
-	/* Macros: */
-		/** Endpoint address of the Keyboard HID reporting IN endpoint. */
+		#define KEYBOARD_INTERFACE           0
 		#define KEYBOARD_EPADDR              (ENDPOINT_DIR_IN | 1)
-
-		/** Size in bytes of the Keyboard HID reporting IN endpoint. */
 		#define KEYBOARD_EPSIZE              16
+
+		#define CONSOLE_INTERFACE            1
+		#define CONSOLE_IN_EPADDR            (ENDPOINT_DIR_IN | 2)
+		#define CONSOLE_OUT_EPADDR           (ENDPOINT_DIR_OUT | 3)
+		#define CONSOLE_EPSIZE               32
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

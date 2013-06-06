@@ -61,6 +61,26 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM KeyboardReport[] =
 	HID_RI_END_COLLECTION(0),
 };
 
+const USB_Descriptor_HIDReport_Datatype_t PROGMEM ConsoleReport[] =
+{
+	HID_RI_USAGE_PAGE(16, 0xFF31), /* Vendor Page(PJRC Teensy compatible) */
+	HID_RI_USAGE(8, 0x74), /* Vendor Usage(PJRC Teensy compatible) */
+	HID_RI_COLLECTION(8, 0x01), /* Application */
+		HID_RI_USAGE(8, 0x75), /* Vendor Usage 0x75 */
+		HID_RI_LOGICAL_MINIMUM(8, 0x00),
+		HID_RI_LOGICAL_MAXIMUM(8, 0xFF),
+		HID_RI_REPORT_COUNT(8, CONSOLE_EPSIZE),
+		HID_RI_REPORT_SIZE(8, 0x08),
+		HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
+		HID_RI_USAGE(8, 0x76), /* Vendor Usage 0x76 */
+		HID_RI_LOGICAL_MINIMUM(8, 0x00),
+		HID_RI_LOGICAL_MAXIMUM(8, 0xFF),
+		HID_RI_REPORT_COUNT(8, CONSOLE_EPSIZE),
+		HID_RI_REPORT_SIZE(8, 0x08),
+		HID_RI_OUTPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE | HID_IOF_NON_VOLATILE),
+	HID_RI_END_COLLECTION(0),
+};
+
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
  *  device characteristics, including the supported USB version, control endpoint size and the
  *  number of device configurations. The descriptor is read out by the USB host when the enumeration
@@ -95,12 +115,12 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
  */
 const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 {
-	.Config =
+	.config =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Configuration_Header_t), .Type = DTYPE_Configuration},
 
 			.TotalConfigurationSize = sizeof(USB_Descriptor_Configuration_t),
-			.TotalInterfaces        = 1,
+			.TotalInterfaces        = 2,
 
 			.ConfigurationNumber    = 1,
 			.ConfigurationStrIndex  = NO_DESCRIPTOR,
@@ -110,12 +130,12 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.MaxPowerConsumption    = USB_CONFIG_POWER_MA(100)
 		},
 
-	.HID_Interface =
+	.keyboard_interface =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
 
-			.InterfaceNumber        = 0x00,
-			.AlternateSetting       = 0x00,
+			.InterfaceNumber        = KEYBOARD_INTERFACE,
+			.AlternateSetting       = 0,
 
 			.TotalEndpoints         = 1,
 
@@ -126,7 +146,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
 
-	.HID_KeyboardHID =
+	.keyboard_hid =
 		{
 			.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
 
@@ -137,14 +157,61 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.HIDReportLength        = sizeof(KeyboardReport)
 		},
 
-	.HID_ReportINEndpoint =
+	.keyboard_endpoint =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
 
 			.EndpointAddress        = KEYBOARD_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
 			.EndpointSize           = KEYBOARD_EPSIZE,
-			.PollingIntervalMS      = 0x01
+			.PollingIntervalMS      = 1
+		},
+
+	.console_interface =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
+
+			.InterfaceNumber        = CONSOLE_INTERFACE,
+			.AlternateSetting       = 0x00,
+
+			.TotalEndpoints         = 2,
+
+			.Class                  = HID_CSCP_HIDClass,
+			.SubClass               = HID_CSCP_NonBootSubclass,
+			.Protocol               = HID_CSCP_NonBootProtocol,
+
+			.InterfaceStrIndex      = NO_DESCRIPTOR
+		},
+
+	.console_hid =
+		{
+			.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
+
+			.HIDSpec                = VERSION_BCD(01.11),
+			.CountryCode            = 0x00,
+			.TotalReportDescriptors = 1,
+			.HIDReportType          = HID_DTYPE_Report,
+			.HIDReportLength        = sizeof(ConsoleReport)
+		},
+
+	.console_in_endpoint =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
+
+			.EndpointAddress        = CONSOLE_IN_EPADDR,
+			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+			.EndpointSize           = CONSOLE_EPSIZE,
+			.PollingIntervalMS      = 1
+		},
+
+	.console_out_endpoint =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
+
+			.EndpointAddress        = CONSOLE_OUT_EPADDR,
+			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+			.EndpointSize           = CONSOLE_EPSIZE,
+			.PollingIntervalMS      = 1
 		},
 };
 
@@ -223,15 +290,30 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Size    = pgm_read_byte(&ProductString.Header.Size);
 					break;
 			}
-
 			break;
 		case HID_DTYPE_HID:
-			Address = &ConfigurationDescriptor.HID_KeyboardHID;
-			Size    = sizeof(USB_HID_Descriptor_HID_t);
+			switch (wIndex) {
+				case KEYBOARD_INTERFACE:
+					Address = &ConfigurationDescriptor.keyboard_hid;
+					Size    = sizeof(USB_HID_Descriptor_HID_t);
+					break;
+				case CONSOLE_INTERFACE:
+					Address = &ConfigurationDescriptor.console_hid;
+					Size    = sizeof(USB_HID_Descriptor_HID_t);
+					break;
+			}
 			break;
 		case HID_DTYPE_Report:
-			Address = &KeyboardReport;
-			Size    = sizeof(KeyboardReport);
+			switch (wIndex) {
+				case KEYBOARD_INTERFACE:
+					Address = &KeyboardReport;
+					Size    = sizeof(KeyboardReport);
+					break;
+				case CONSOLE_INTERFACE:
+					Address = &ConsoleReport;
+					Size    = sizeof(ConsoleReport);
+					break;
+			}
 			break;
 	}
 

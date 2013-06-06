@@ -29,6 +29,24 @@ u16 Usb::idle_time_remaining_ = 0;
 
 u8 Usb::prev_data_[] = { 0 };
 
+RingBuffer_t Usb::console_send_rb_ = { 0 };
+u8 Usb::console_send_rb_data_[] = { 0 };
+
+void Usb::Update() {
+  if (USB_DeviceState != DEVICE_STATE_Configured)
+    return;
+
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+
+  // If bank is not filled yet, fill it with zeros to prevent hid_listen
+  // from disconnecting.
+  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
+    Endpoint_Write_8(0);
+  }
+
+  Endpoint_ClearIN();
+}
+
 void Usb::SendReport() {
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
@@ -59,9 +77,39 @@ void Usb::SendReport() {
   Endpoint_ClearIN();
 }
 
+void Usb::ConsoleWrite(u8 byte) {
+  if (USB_DeviceState != DEVICE_STATE_Configured)
+    return;
+
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+
+  // Try to send all queued bytes.
+  while (Endpoint_IsReadWriteAllowed() &&
+         !RingBuffer_IsEmpty(&console_send_rb_)) {
+    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb_));
+  }
+
+  // If number of bytes in queue is greater then enpoint size clear IN.
+  if (!Endpoint_IsReadWriteAllowed())
+    Endpoint_ClearIN();
+
+  if (Endpoint_IsReadWriteAllowed()) {
+    // If possible write byte to bank directly.
+    Endpoint_Write_8(byte);
+  } else {
+    // Enque new byte and hope buffer isn't full already.
+    RingBuffer_Insert(&console_send_rb_, byte);
+    Endpoint_ClearIN();
+  }
+}
+
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
                              KEYBOARD_EPSIZE, 1);
+  Endpoint_ConfigureEndpoint(CONSOLE_IN_EPADDR, EP_TYPE_INTERRUPT,
+                             CONSOLE_EPSIZE, 2);
+  Endpoint_ConfigureEndpoint(CONSOLE_OUT_EPADDR, EP_TYPE_INTERRUPT,
+                             CONSOLE_EPSIZE, 1);
   USB_Device_EnableSOFEvents();
 }
 
@@ -115,3 +163,4 @@ void EVENT_USB_Device_StartOfFrame(void) {
   Usb::Tick();
   Usb::set_start_of_frame(true);
 }
+
