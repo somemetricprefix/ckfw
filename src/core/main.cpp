@@ -17,6 +17,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/power.h>
+#include <avr/sleep.h>
 #include <avr/wdt.h>
 
 #include "matrix.h"
@@ -40,21 +41,20 @@ int main(void)
   // Disable clock division
   clock_prescale_set(clock_div_1);
 
-  // Initialize usb library.
   Usb::Init();
   Matrix::Init();
-
   Init();
 
   // Enable interrupts. Interrupts are required for USB.
   sei();
 
   for (;;) {
-    if (!Usb::start_of_frame())
-      continue;
-    Matrix::Scan();
-    Tick();
-    Usb::Tick();
-    Usb::SendReport();
+    if (Usb::start_of_frame()) {
+      Matrix::Scan();
+      Tick();
+      Usb::SendReport();
+    }
+
+    sleep_mode();
   }
 }

@@ -112,5 +112,6 @@ void EVENT_USB_Device_ControlRequest(void) {
 }
 
 void EVENT_USB_Device_StartOfFrame(void) {
+  Usb::Tick();
   Usb::set_start_of_frame(true);
 }
