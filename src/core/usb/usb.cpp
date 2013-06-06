@@ -19,11 +19,14 @@
 #include "../common.h"
 #include "descriptors.h"
 
+volatile bool Usb::start_of_frame_ = false;
+
 // HID Specification 1.11:
 // "The recommended default idle rate (rate when the device is initialized) is
 // 500 milliseconds for keyboards (delay before first repeat rate)"
 u16 Usb::idle_time_ = 500;
 u16 Usb::idle_time_remaining_ = 0;
+
 u8 Usb::prev_data_[] = { 0 };
 
 void Usb::SendReport() {
@@ -32,7 +35,6 @@ void Usb::SendReport() {
 
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
 
-  // Wait for IN Request
   while (!Endpoint_IsReadWriteAllowed());
 
   void *curr_data = Report::get_data();
@@ -43,31 +45,30 @@ void Usb::SendReport() {
     memcpy(prev_data_, curr_data, Report::kDataSize);
     send_data = true;
   // ... or idle time is over.
-  } else if (idle_time_remaining_++ < idle_time_) {
+  } else if (idle_time_remaining_ == 0) {
     // Just send the same report again.
     send_data = true;
   }
 
   if (send_data) {
     Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
-    idle_time_remaining_ = 0;
+    idle_time_remaining_ = idle_time_;
   }
 
-  // Finalize stream
+  // Finalize stream.
   Endpoint_ClearIN();
 }
 
-void EVENT_USB_Device_ConfigurationChanged(void)
-{
+void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
                              KEYBOARD_EPSIZE, 1);
+  USB_Device_EnableSOFEvents();
 }
 
 // Appendix G: HID Request Support Requirements
 // For a Non-Boot Keyboard only GET_REPORT, SET_IDLE, GET_IDLE control requests
 // are required to be implemented.
-void EVENT_USB_Device_ControlRequest(void)
-{
+void EVENT_USB_Device_ControlRequest(void) {
   // Handle HID specific requests.
   switch (USB_ControlRequest.bRequest)
   {
@@ -108,4 +109,8 @@ void EVENT_USB_Device_ControlRequest(void)
       }
       break;
   }
+}
+
+void EVENT_USB_Device_StartOfFrame(void) {
+  Usb::set_start_of_frame(true);
 }

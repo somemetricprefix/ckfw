@@ -29,6 +29,8 @@ void Init() {}
 __attribute__((weak))
 void Update() {}
 
+#include "keycodes.h"
+
 int main(void)
 {
   // Disable watchdog if enabled by bootloader/fuses
@@ -48,8 +50,11 @@ int main(void)
   sei();
 
   for (;;) {
+    if (!Usb::start_of_frame())
+      continue;
     Matrix::Scan();
     Update();
+    Usb::Update();
     Usb::SendReport();
   }
 }
