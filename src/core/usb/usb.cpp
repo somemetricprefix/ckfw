@@ -32,49 +32,17 @@ u8 Usb::prev_data_[] = { 0 };
 RingBuffer_t Usb::console_send_rb_ = { 0 };
 u8 Usb::console_send_rb_data_[] = { 0 };
 
-void Usb::Update() {
-  if (USB_DeviceState != DEVICE_STATE_Configured)
-    return;
-
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-
-  // If bank is not filled yet, fill it with zeros to prevent hid_listen
-  // from disconnecting.
-  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
-    Endpoint_Write_8(0);
-  }
-
-  Endpoint_ClearIN();
-}
-
-void Usb::SendReport() {
+void Usb::UpdateEndpoints() {
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
+  if (Endpoint_IsINReady())
+    WriteKeyboardEndpoint();
 
-  while (!Endpoint_IsReadWriteAllowed());
-
-  void *curr_data = Report::data();
-  bool send_data = false;
-  // Send report to host if either report has changed...
-  if (memcmp(prev_data_, curr_data, Report::kDataSize)) {
-    // Get new report.
-    memcpy(prev_data_, curr_data, Report::kDataSize);
-    send_data = true;
-  // ... or idle time is over.
-  } else if (idle_time_remaining_ == 0) {
-    // Just send the same report again.
-    send_data = true;
-  }
-
-  if (send_data) {
-    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
-    idle_time_remaining_ = idle_time_;
-  }
-
-  // Finalize stream.
-  Endpoint_ClearIN();
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+  if (Endpoint_IsINReady())
+    WriteConsoleEndpoint();
 }
 
 void Usb::ConsoleWrite(u8 byte) {
@@ -101,6 +69,45 @@ void Usb::ConsoleWrite(u8 byte) {
     RingBuffer_Insert(&console_send_rb_, byte);
     Endpoint_ClearIN();
   }
+}
+
+void Usb::WriteKeyboardEndpoint() {
+  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
+
+  while (!Endpoint_IsReadWriteAllowed());
+
+  void *curr_data = Report::data();
+  bool send_data = false;
+  // Send report to host if either report has changed...
+  if (memcmp(prev_data_, curr_data, Report::kDataSize)) {
+    // Get new report.
+    memcpy(prev_data_, curr_data, Report::kDataSize);
+    send_data = true;
+  // ... or idle time is over.
+  } else if (idle_time_remaining_ == 0) {
+    // Just send the same report again.
+    send_data = true;
+  }
+
+  if (send_data) {
+    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
+    idle_time_remaining_ = idle_time_;
+  }
+
+  // Finalize stream.
+  Endpoint_ClearIN();
+}
+
+void Usb::WriteConsoleEndpoint() {
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+
+  // If bank is not filled yet, fill it with zeros to prevent hid_listen
+  // from disconnecting.
+  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
+    Endpoint_Write_8(0);
+  }
+
+  Endpoint_ClearIN();
 }
 
 void EVENT_USB_Device_ConfigurationChanged(void) {
@@ -161,6 +168,4 @@ void EVENT_USB_Device_ControlRequest(void) {
 
 void EVENT_USB_Device_StartOfFrame(void) {
   Usb::Tick();
-  Usb::set_start_of_frame(true);
 }
-

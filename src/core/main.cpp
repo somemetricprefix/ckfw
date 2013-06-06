@@ -45,16 +45,16 @@ int main(void)
   Matrix::Init();
   Init();
 
-  // Enable interrupts. Interrupts are required for USB.
+  // Enable interrupts.
   sei();
 
   for (;;) {
-    if (Usb::start_of_frame()) {
+    if (Usb::StartOfFrameInterrupt()) {
       Matrix::Scan();
       Tick();
-      Usb::SendReport();
-      Usb::Update();
     }
+
+    Usb::UpdateEndpoints();
 
     sleep_mode();
   }
