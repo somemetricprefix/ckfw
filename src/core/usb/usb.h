@@ -25,7 +25,7 @@ class Usb {
  public:
   static inline void Init() { USB_Init(); }
 
-  static inline void Update() {
+  static inline void Tick() {
     if (idle_time_remaining_)
       idle_time_remaining_--;
   }

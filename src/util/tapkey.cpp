@@ -22,7 +22,7 @@
 // tricky to get right without one.
 void TapKey::Update(bool other_key_pressed) const {
   TapStateMachine machine;
-  machine.context = key_->get_context();
+  machine.context = key_->context();
 
   const bool timeout = (machine.cycle == kTapThreshold);
 

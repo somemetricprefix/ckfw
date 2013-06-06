@@ -42,9 +42,9 @@ class TapKey {
   // to allow short hold times.
   void Update(bool other_key_pressed) const;
 
-  inline u8 get_tap_keycode() const { return tap_keycode_; }
+  inline u8 tap_keycode() const { return tap_keycode_; }
 
-  inline u8 get_hold_keycode() const { return hold_keycode_; }
+  inline u8 hold_keycode() const { return hold_keycode_; }
 
  private:
   enum TapStates {

@@ -27,7 +27,7 @@ __attribute__((weak))
 void Init() {}
 
 __attribute__((weak))
-void Update() {}
+void Tick() {}
 
 #include "keycodes.h"
 
@@ -53,8 +53,8 @@ int main(void)
     if (!Usb::start_of_frame())
       continue;
     Matrix::Scan();
-    Update();
-    Usb::Update();
+    Tick();
+    Usb::Tick();
     Usb::SendReport();
   }
 }

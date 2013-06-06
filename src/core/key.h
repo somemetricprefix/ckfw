@@ -44,7 +44,7 @@ class Key {
 
   // context is per key variable that can be set from outside to track key
   // states over more than one cycle.
-  inline u16 get_context() const { return context_; }
+  inline u16 context() const { return context_; }
   inline void set_context(u16 context) { context_ = context; }
 
  private:

@@ -32,7 +32,7 @@ class Report {
   static void RemoveKeycode(u8 keycode);
 
   // Returns a pointer to the data of this report.
-  static void *get_data() { return (void *)data_; }
+  static void *data() { return (void *)data_; }
 
  private:
   // Absolute Keycodes are represented as bitfields ins the report data.

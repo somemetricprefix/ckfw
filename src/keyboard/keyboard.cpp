@@ -21,7 +21,7 @@
 
 static const u8 keymap[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
 
-void Update() {
+void Tick() {
   u8 num_keys_pressed = 0;
   for (u8 row = 0; row < Matrix::kNumRows; row++) {
     for (u8 col = 0; col < Matrix::kNumColumns; col++) {

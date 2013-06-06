@@ -37,7 +37,7 @@ void Usb::SendReport() {
 
   while (!Endpoint_IsReadWriteAllowed());
 
-  void *curr_data = Report::get_data();
+  void *curr_data = Report::data();
   bool send_data = false;
   // Send report to host if either report has changed...
   if (memcmp(prev_data_, curr_data, Report::kDataSize)) {
@@ -79,7 +79,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write the report data to the control endpoint
         // The functions waits for the host to enter the status stage
-        Endpoint_Write_Control_Stream_LE(Report::get_data(), Report::kDataSize);
+        Endpoint_Write_Control_Stream_LE(Report::data(), Report::kDataSize);
 
         // Manually clear the status stage
         Endpoint_ClearOUT();
