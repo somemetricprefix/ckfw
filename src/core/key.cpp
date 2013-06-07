@@ -19,12 +19,10 @@ void Key::Debounce(bool input) {
       break;
 
     case DebounceStates::kDown2:
-      if (input) {
-        down_ = true;
+      if (input)
         debounce_state_ = DebounceStates::kPressed;
-      } else {
+      else
         debounce_state_ = DebounceStates::kDown1;
-      }
       break;
 
     case DebounceStates::kPressed:
@@ -47,12 +45,10 @@ void Key::Debounce(bool input) {
       break;
 
     case DebounceStates::kUp2:
-      if (input) {
+      if (input)
         debounce_state_ = DebounceStates::kUp1;
-      } else {
-        down_ = false;
+      else
         debounce_state_ = DebounceStates::kReleased;
-      }
       break;
 
     case DebounceStates::kReleased:

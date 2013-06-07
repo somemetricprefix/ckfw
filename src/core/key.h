@@ -40,7 +40,12 @@ class Key {
   }
 
   // Returns true if key is held down, false otherwise.
-  inline bool IsDown() const { return down_; }
+  inline bool IsDown() const {
+    return (debounce_state_ == kDownIdle) ||
+           (debounce_state_ == kUp1) ||
+           (debounce_state_ == kUp2) ||
+           (debounce_state_ == kPressed);
+  }
 
   // context is per key variable that can be set from outside to track key
   // states over more than one cycle.
@@ -59,11 +64,7 @@ class Key {
     kReleased,
   };
 
-  // HACKME: Using a bitfield here reduces size in data section but increases
-  // program code because GCC doesn't create very efficient code.
-  // Find a memory layout that is a good compromise between data and code size.
   u8 debounce_state_;
-  bool down_;
   u16 context_;
 };
 
