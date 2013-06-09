@@ -19,6 +19,8 @@
 #include "../common.h"
 #include "descriptors.h"
 
+FILE console;
+
 volatile bool Usb::start_of_frame_ = false;
 
 // HID Specification 1.11:
@@ -45,9 +47,9 @@ void Usb::UpdateEndpoints() {
     WriteConsoleEndpoint();
 }
 
-void Usb::ConsoleWrite(u8 byte) {
+int Usb::ConsoleWrite(char byte, FILE *unused) {
   if (USB_DeviceState != DEVICE_STATE_Configured)
-    return;
+    return 1;
 
   Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
 
@@ -65,10 +67,14 @@ void Usb::ConsoleWrite(u8 byte) {
     // If possible write byte to bank directly.
     Endpoint_Write_8(byte);
   } else {
-    // Enque new byte and hope buffer isn't full already.
-    RingBuffer_Insert(&console_send_rb_, byte);
     Endpoint_ClearIN();
+    if (RingBuffer_IsFull(&console_send_rb_))
+      return 1;
+    else
+      RingBuffer_Insert(&console_send_rb_, byte);
   }
+
+  return 0;
 }
 
 void Usb::WriteKeyboardEndpoint() {
