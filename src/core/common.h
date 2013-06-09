@@ -49,7 +49,7 @@ extern FILE console;
 #ifdef NDEBUG
 #define DEBUG(M, ...)
 #else
-#define DEBUG(M, ...) fprintf(Usb::console(), "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define DEBUG(M, ...) fprintf(&console, "DEBUG: " M "\n", ##__VA_ARGS__)
 #endif
 
 #endif // CKFW_SRC_CORE_COMMON_H
