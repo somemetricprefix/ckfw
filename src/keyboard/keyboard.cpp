@@ -27,10 +27,10 @@ void Tick() {
     for (u8 col = 0; col < Matrix::kNumColumns; col++) {
       const Key *key = Matrix::GetKey(row, col);
       if (key->Pressed()) {
-        Report::AddKeycode(keymap[row][col]);
+        report::AddKeycode(keymap[row][col]);
         num_keys_pressed++;
       } else if (key->Released()) {
-        Report::RemoveKeycode(keymap[row][col]);
+        report::RemoveKeycode(keymap[row][col]);
       }
     }
   }

@@ -69,8 +69,7 @@ class Usb {
  private:
   static const u8 kConsoleSendBufferSize = 128;
 
-  // Gets current report data from Report class and writes it to the keyboard
-  // endpoint.
+  // Gets current report data and writes it to the keyboard endpoint.
   static void WriteKeyboardEndpoint();
 
   // Writes console IN endpoint. hid_listen tool needs a full IN endpoint all
@@ -86,7 +85,7 @@ class Usb {
   static u16 idle_time_;
   static u16 idle_time_remaining_;
 
-  static u8 prev_data_[Report::kDataSize];
+  static u8 prev_data_[report::kDataSize];
 
   static RingBuffer_t console_send_rb_;
   static u8 console_send_rb_data_[kConsoleSendBufferSize];

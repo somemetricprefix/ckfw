@@ -82,12 +82,12 @@ void Usb::WriteKeyboardEndpoint() {
 
   while (!Endpoint_IsReadWriteAllowed());
 
-  void *curr_data = Report::data();
+  void *curr_data = report::data;
   bool send_data = false;
   // Send report to host if either report has changed...
-  if (memcmp(prev_data_, curr_data, Report::kDataSize)) {
+  if (memcmp(prev_data_, curr_data, report::kDataSize)) {
     // Get new report.
-    memcpy(prev_data_, curr_data, Report::kDataSize);
+    memcpy(prev_data_, curr_data, report::kDataSize);
     send_data = true;
   // ... or idle time is over.
   } else if (idle_time_remaining_ == 0) {
@@ -96,7 +96,7 @@ void Usb::WriteKeyboardEndpoint() {
   }
 
   if (send_data) {
-    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
+    Endpoint_Write_Stream_LE(curr_data, report::kDataSize, NULL);
     idle_time_remaining_ = idle_time_;
   }
 
@@ -146,7 +146,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write the report data to the control endpoint
         // The functions waits for the host to enter the status stage
-        Endpoint_Write_Control_Stream_LE(Report::data(), Report::kDataSize);
+        Endpoint_Write_Control_Stream_LE(report::data, report::kDataSize);
 
         // Manually clear the status stage
         Endpoint_ClearOUT();

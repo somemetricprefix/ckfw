@@ -19,35 +19,20 @@
 
 #include "common.h"
 
-// Holds data for a HID report and methods to change keycodes in the report.
-// The report format is a bitmap of 16bytes. Details can be found in
-// usb/descriptors.c where the format is specified.
-class Report {
- public:
-  static const u8 kDataSize = 16;
+// The HID report is an encoded set of keycodes that is transferred over usb.
+// This file conains functions to translate keycodes to the format that
+// is specified by the HID report descriptor.
+namespace report {
 
-  // Adds an keycode to report data.
-  static void AddKeycode(u8 keycode);
-  // Removes an keycode report data.
-  static void RemoveKeycode(u8 keycode);
+const u8 kDataSize = 16;
+extern u8 data[kDataSize];
 
-  // Returns a pointer to the data of this report.
-  static void *data() { return (void *)data_; }
+// Adds an keycode to report data.
+void AddKeycode(u8 keycode);
 
- private:
-  // Absolute Keycodes are represented as bitfields ins the report data.
-  // Example: The keycode value of 0x04 ("A" key on qwerty) is equal to the 4th
-  // bit in the key bitmap. Note that there is a "0th" bit.
-  //
-  // 000...000x000000000000
-  // \____________/\______/
-  //       |          |
-  //     Keys      Modifiers
-  static u8 data_[kDataSize];
+// Removes an keycode report data.
+void RemoveKeycode(u8 keycode);
 
-  static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
+}  // namespace report
 
-  static void KeycodeAction(u8 keycode, bool add);
-};
-
-#endif // CKFW_SRC_CORE_REPORT_H_
+#endif  // CKFW_SRC_CORE_REPORT_H_
