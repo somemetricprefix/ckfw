@@ -16,36 +16,50 @@
 
 #include "matrix.h"
 
-// This tell avr-libc to use constant definitions for IO names
+// This tell avr-libc to use constant definitions for IO names.
 #define _SFR_ASM_COMPAT 1
 #include <avr/io.h>
 
-const IoPort Matrix::row_ports_[Matrix::kNumRows] = {
-  MATRIX_ROW_PORTS
-};
+namespace matrix {
 
-const IoPort Matrix::column_ports_[Matrix::kNumColumns] = {
-  MATRIX_COLUMN_PORTS
-};
+// Each row and each column of the matrix has a dedicated IO port.
+// Port definitions are in config.h.
+static const IoPort row_ports[kNumRows] = { MATRIX_ROW_PORTS };
+static const IoPort column_ports[kNumColumns] = { MATRIX_COLUMN_PORTS };
 
-Key Matrix::matrix_[kNumRows][kNumColumns];
+Key keys[kNumRows][kNumColumns];
 
-void Matrix::Init() {
+void Init() {
     for (u8 i = 0; i < kNumColumns; i++) {
       // Configure column ports as input with pull-up.
-      column_ports_[i].PullUp();
+      column_ports[i].PullUp();
     }
 };
 
-void Matrix::Scan() {
+// Low signal on row pin selects the row.
+static inline void SelectRow(u8 row) { row_ports[row].WriteLow(); }
+
+// Pulls up the row pin.
+static inline void DeselectRow(u8 row) { row_ports[row].PullUp(); }
+
+// Returns true if key is pressed in that column.
+static inline bool ReadColumn(u8 col) {
+  // Pull-ups pins are used on input and key press pulls the input to low
+  // level thus the logic has to be inverted here.
+  return !column_ports[col].Read();
+}
+
+void Scan() {
   for (u8 row = 0; row < kNumRows; row++) {
     SelectRow(row);
 
     for (u8 col = 0; col < kNumColumns; col++) {
       const bool input = ReadColumn(col);
-      matrix_[row][col].Debounce(input);
+      keys[row][col].Debounce(input);
     }
 
     DeselectRow(row);
   }
 }
+
+}  // namespace matrix

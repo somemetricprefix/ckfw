@@ -29,7 +29,7 @@ void TapKey::Update(bool other_key_pressed) const {
   switch (machine.state) {
     case TapStates::kStart:
       if (key_->Pressed()) {
-        Report::AddKeycode(hold_keycode_);
+        report::AddKeycode(hold_keycode_);
         machine.cycle = 0;
         machine.state = TapStates::kWaitTapRelease1;
       }
@@ -39,8 +39,8 @@ void TapKey::Update(bool other_key_pressed) const {
       if (other_key_pressed || timeout) {
         machine.state = TapStates::kHold;
       } else if (key_->Released()) {
-        Report::RemoveKeycode(hold_keycode_);
-        Report::AddKeycode(tap_keycode_);
+        report::RemoveKeycode(hold_keycode_);
+        report::AddKeycode(tap_keycode_);
         machine.state = TapStates::kTap;
       } else {
         machine.cycle++;
@@ -48,9 +48,9 @@ void TapKey::Update(bool other_key_pressed) const {
       break;
 
     case TapStates::kTap:
-      Report::RemoveKeycode(tap_keycode_);
+      report::RemoveKeycode(tap_keycode_);
       if (key_->Pressed()) {
-        Report::AddKeycode(tap_keycode_);
+        report::AddKeycode(tap_keycode_);
         machine.cycle = 0;
         machine.state = kWaitTapRelease2;
       } else {
@@ -63,7 +63,7 @@ void TapKey::Update(bool other_key_pressed) const {
       if (timeout) {
         machine.state = kStart;
       } else if (key_->Pressed()) {
-        Report::AddKeycode(tap_keycode_);
+        report::AddKeycode(tap_keycode_);
         machine.cycle = 0;
         machine.state = kWaitTapRelease2;
       } else {
@@ -73,8 +73,8 @@ void TapKey::Update(bool other_key_pressed) const {
 
     case TapStates::kWaitTapRelease2:
       if (other_key_pressed) {
-        Report::RemoveKeycode(tap_keycode_);
-        Report::AddKeycode(hold_keycode_);
+        report::RemoveKeycode(tap_keycode_);
+        report::AddKeycode(hold_keycode_);
         machine.state = TapStates::kHold;
       } else if (timeout) {
         machine.state = TapStates::kTapHold;
@@ -87,14 +87,14 @@ void TapKey::Update(bool other_key_pressed) const {
 
     case TapStates::kTapHold:
       if (key_->Released()) {
-        Report::RemoveKeycode(tap_keycode_);
+        report::RemoveKeycode(tap_keycode_);
         machine.state = kStart;
       }
       break;
 
     case TapStates::kHold:
       if (key_->Released()) {
-        Report::RemoveKeycode(hold_keycode_);
+        report::RemoveKeycode(hold_keycode_);
         machine.state = kStart;
       }
       break;

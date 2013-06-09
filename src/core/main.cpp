@@ -42,7 +42,7 @@ int main(void)
   clock_prescale_set(clock_div_1);
 
   Usb::Init();
-  Matrix::Init();
+  matrix::Init();
   Init();
 
   // Enable interrupts.
@@ -50,7 +50,7 @@ int main(void)
 
   for (;;) {
     if (Usb::StartOfFrameInterrupt()) {
-      Matrix::Scan();
+      matrix::Scan();
       Tick();
     }
 

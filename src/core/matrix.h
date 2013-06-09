@@ -22,44 +22,19 @@
 #include "ioport.h"
 #include "key.h"
 
-class Matrix {
- public:
-  static const u8 kNumRows = MATRIX_NUM_ROWS;
-  static const u8 kNumColumns = MATRIX_NUM_COLUMNS;
+namespace matrix {
 
-  // Initializes the I/O ports of the matrix.
-  // __attribute__((optimize("-O3"))) is used because -O3 creates proper
-  // instructions (sbi / cbi). That makes the code produced by -O3 smaller and
-  // more efficient than the code produced by -Os.
-  static void Init() __attribute__((optimize("-O3")));
+const u8 kNumRows = MATRIX_NUM_ROWS;
+const u8 kNumColumns = MATRIX_NUM_COLUMNS;
 
-  // Updates the matrix with the current key states.
-  static void Scan();
+extern Key keys[kNumRows][kNumColumns];
 
-  static inline Key *GetKey(u8 row, u8 col) {
-    return &matrix_[row][col];
-  }
+// Initializes the I/O ports of the keys.
+void Init();
 
- private:
-  // Each row and column of the matrix has a dedicated IO port.
-  // Port definitions are in config.h
-  static const IoPort row_ports_[kNumRows];
-  static const IoPort column_ports_[kNumColumns];
+// Updates the keys with the current key states.
+void Scan();
 
-  // Low signal on row pin selects the row.
-  static inline void SelectRow(u8 row) { row_ports_[row].WriteLow(); }
+}  // namespace matrix
 
-  // Pulls up the row pin.
-  static inline void DeselectRow(u8 row) { row_ports_[row].PullUp(); }
-
-  // Returns true if key is pressed in that column.
-  static inline bool ReadColumn(u8 col) {
-    // Pull-ups pins are used on input and key press pulls the input to low
-    // level thus the logic has to be inverted here.
-    return !column_ports_[col].Read();
-  }
-
-  static Key matrix_[kNumRows][kNumColumns];
-};
-
-#endif //CKFW_SRC_CORE_MATRIX_H_
+#endif  // CKFW_SRC_CORE_MATRIX_H_

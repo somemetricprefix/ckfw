@@ -19,22 +19,22 @@
 #include "core/report.h"
 #include "util/tapkey.h"
 
-static const u8 keymap[Matrix::kNumRows][Matrix::kNumColumns] = { KEYMAP };
+static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] = { KEYMAP };
 
 void Tick() {
   u8 num_keys_pressed = 0;
-  for (u8 row = 0; row < Matrix::kNumRows; row++) {
-    for (u8 col = 0; col < Matrix::kNumColumns; col++) {
-      const Key *key = Matrix::GetKey(row, col);
-      if (key->Pressed()) {
+  for (u8 row = 0; row < matrix::kNumRows; row++) {
+    for (u8 col = 0; col < matrix::kNumColumns; col++) {
+      const Key &key = matrix::keys[row][col];
+      if (key.Pressed()) {
         report::AddKeycode(keymap[row][col]);
         num_keys_pressed++;
-      } else if (key->Released()) {
+      } else if (key.Released()) {
         report::RemoveKeycode(keymap[row][col]);
       }
     }
   }
 
-  TapKey tap_key(Matrix::GetKey(3, 6), KC_BSPACE, KC_RSHIFT);
+  TapKey tap_key(&matrix::keys[3][6], KC_BSPACE, KC_RSHIFT);
   tap_key.Update(num_keys_pressed);
 }
