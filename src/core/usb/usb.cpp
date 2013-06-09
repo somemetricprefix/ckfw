@@ -101,6 +101,12 @@ void Usb::WriteKeyboardEndpoint() {
 void Usb::WriteConsoleEndpoint() {
   Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
 
+  // Try to send all queued bytes.
+  while (Endpoint_IsReadWriteAllowed() &&
+         !RingBuffer_IsEmpty(&console_send_rb_)) {
+    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb_));
+  }
+
   // If bank is not filled yet, fill it with zeros to prevent hid_listen
   // from disconnecting.
   for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
