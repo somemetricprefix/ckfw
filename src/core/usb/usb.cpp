@@ -19,22 +19,116 @@
 #include "../common.h"
 #include "descriptors.h"
 
+// Console can be used with stdio functions.
 FILE console;
 
-volatile bool Usb::start_of_frame_ = false;
+namespace usb {
 
+volatile bool start_of_frame = false;
+
+// Current idle period in ms. This is set by the host via a Set Idle HID class
+// request to silence the device's reports for either the entire idle
+// duration, or until the report status changes (e.g. the user presses a key).
 // HID Specification 1.11:
 // "The recommended default idle rate (rate when the device is initialized) is
 // 500 milliseconds for keyboards (delay before first repeat rate)"
-u16 Usb::idle_time_ = 500;
-u16 Usb::idle_time_remaining_ = 0;
+static u16 idle_time = 500;
+static u16 idle_time_remaining = 0;
 
-u8 Usb::prev_data_[] = { 0 };
+static const u8 kConsoleSendBufferSize = 128;
+static RingBuffer_t console_send_rb;
+static u8 console_send_rb_data[kConsoleSendBufferSize];
 
-RingBuffer_t Usb::console_send_rb_ = { 0 };
-u8 Usb::console_send_rb_data_[] = { 0 };
+// Writes single byte to console endpoint.
+static int ConsoleWrite(char byte, FILE *unused) {
+  if (USB_DeviceState != DEVICE_STATE_Configured)
+    return 1;
 
-void Usb::UpdateEndpoints() {
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+
+  // Try to send all queued bytes.
+  while (Endpoint_IsReadWriteAllowed() &&
+         !RingBuffer_IsEmpty(&console_send_rb)) {
+    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
+  }
+
+  // If number of bytes in queue is greater then enpoint size clear IN.
+  if (!Endpoint_IsReadWriteAllowed())
+    Endpoint_ClearIN();
+
+  if (Endpoint_IsReadWriteAllowed()) {
+    // If possible write byte to bank directly.
+    Endpoint_Write_8(byte);
+  } else {
+    Endpoint_ClearIN();
+    if (RingBuffer_IsFull(&console_send_rb))
+      return 1;
+    else
+      RingBuffer_Insert(&console_send_rb, byte);
+  }
+
+  return 0;
+}
+
+void Init() {
+  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
+      sizeof(console_send_rb_data));
+  // Setup a FILE to use stdio functions for the console.
+  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
+  USB_Init();
+}
+
+// Gets current report data and writes it to the keyboard endpoint.
+static void WriteKeyboardEndpoint() {
+  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
+
+  while (!Endpoint_IsReadWriteAllowed());
+
+  // Store last sent report statically to get to know if data has changed.
+  static u8 prev_data[report::kDataSize];
+  void *curr_data = report::data;
+  bool send_data = false;
+  // Send report to host if either report has changed...
+  if (memcmp(prev_data, curr_data, report::kDataSize)) {
+    // Get new report.
+    memcpy(prev_data, curr_data, report::kDataSize);
+    send_data = true;
+  // ... or idle time is over.
+  } else if (idle_time_remaining == 0) {
+    // Just send the same report again.
+    send_data = true;
+  }
+
+  if (send_data) {
+    Endpoint_Write_Stream_LE(curr_data, report::kDataSize, NULL);
+    idle_time_remaining = idle_time;
+  }
+
+  // Finalize stream.
+  Endpoint_ClearIN();
+}
+
+// Writes console IN endpoint. hid_listen tool needs a full IN endpoint all the
+// time.
+static void WriteConsoleEndpoint() {
+  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+
+  // Try to send all queued bytes.
+  while (Endpoint_IsReadWriteAllowed() &&
+         !RingBuffer_IsEmpty(&console_send_rb)) {
+    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
+  }
+
+  // If bank is not filled yet, fill it with zeros to prevent hid_listen
+  // from disconnecting.
+  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
+    Endpoint_Write_8(0);
+  }
+
+  Endpoint_ClearIN();
+}
+
+void UpdateEndpoints() {
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 
@@ -47,81 +141,7 @@ void Usb::UpdateEndpoints() {
     WriteConsoleEndpoint();
 }
 
-int Usb::ConsoleWrite(char byte, FILE *unused) {
-  if (USB_DeviceState != DEVICE_STATE_Configured)
-    return 1;
-
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-
-  // Try to send all queued bytes.
-  while (Endpoint_IsReadWriteAllowed() &&
-         !RingBuffer_IsEmpty(&console_send_rb_)) {
-    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb_));
-  }
-
-  // If number of bytes in queue is greater then enpoint size clear IN.
-  if (!Endpoint_IsReadWriteAllowed())
-    Endpoint_ClearIN();
-
-  if (Endpoint_IsReadWriteAllowed()) {
-    // If possible write byte to bank directly.
-    Endpoint_Write_8(byte);
-  } else {
-    Endpoint_ClearIN();
-    if (RingBuffer_IsFull(&console_send_rb_))
-      return 1;
-    else
-      RingBuffer_Insert(&console_send_rb_, byte);
-  }
-
-  return 0;
-}
-
-void Usb::WriteKeyboardEndpoint() {
-  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-
-  while (!Endpoint_IsReadWriteAllowed());
-
-  void *curr_data = report::data;
-  bool send_data = false;
-  // Send report to host if either report has changed...
-  if (memcmp(prev_data_, curr_data, report::kDataSize)) {
-    // Get new report.
-    memcpy(prev_data_, curr_data, report::kDataSize);
-    send_data = true;
-  // ... or idle time is over.
-  } else if (idle_time_remaining_ == 0) {
-    // Just send the same report again.
-    send_data = true;
-  }
-
-  if (send_data) {
-    Endpoint_Write_Stream_LE(curr_data, report::kDataSize, NULL);
-    idle_time_remaining_ = idle_time_;
-  }
-
-  // Finalize stream.
-  Endpoint_ClearIN();
-}
-
-void Usb::WriteConsoleEndpoint() {
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-
-  // Try to send all queued bytes.
-  while (Endpoint_IsReadWriteAllowed() &&
-         !RingBuffer_IsEmpty(&console_send_rb_)) {
-    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb_));
-  }
-
-  // If bank is not filled yet, fill it with zeros to prevent hid_listen
-  // from disconnecting.
-  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
-    Endpoint_Write_8(0);
-  }
-
-  Endpoint_ClearIN();
-}
-
+// Registers all endpoints and enables SOF interrupt.
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
                              KEYBOARD_EPSIZE, 1);
@@ -159,8 +179,9 @@ void EVENT_USB_Device_ControlRequest(void) {
         Endpoint_ClearSETUP();
         Endpoint_ClearStatusStage();
 
-        // Get idle period in MSB.
-        Usb::set_idle_time(USB_ControlRequest.wValue >> 8);
+        // Idle period in MSB. HID Specification sends idle time in a numbler
+        // multiple of 4ms.
+        idle_time = (USB_ControlRequest.wValue >> 8) * 4;
       }
       break;
 
@@ -169,7 +190,8 @@ void EVENT_USB_Device_ControlRequest(void) {
           (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE)) {
         Endpoint_ClearSETUP();
 
-        Endpoint_Write_8(Usb::idle_time());
+        // HID Specification sends idle time in a numbler multiple of 4ms.
+        Endpoint_Write_8(idle_time / 4);
 
         Endpoint_ClearIN();
         Endpoint_ClearStatusStage();
@@ -179,5 +201,9 @@ void EVENT_USB_Device_ControlRequest(void) {
 }
 
 void EVENT_USB_Device_StartOfFrame(void) {
-  Usb::Tick();
+  if (idle_time_remaining)
+    --idle_time_remaining;
+  start_of_frame = true;
 }
+
+}  // namespace usb

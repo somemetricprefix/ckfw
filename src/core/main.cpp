@@ -41,7 +41,7 @@ int main(void)
   // Disable clock division
   clock_prescale_set(clock_div_1);
 
-  Usb::Init();
+  usb::Init();
   matrix::Init();
   Init();
 
@@ -49,12 +49,12 @@ int main(void)
   sei();
 
   for (;;) {
-    if (Usb::StartOfFrameInterrupt()) {
+    if (usb::StartOfFrameInterrupt()) {
       matrix::Scan();
       Tick();
     }
 
-    Usb::UpdateEndpoints();
+    usb::UpdateEndpoints();
 
     sleep_mode();
   }

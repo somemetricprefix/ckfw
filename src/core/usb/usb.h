@@ -24,72 +24,24 @@
 
 #include "../report.h"
 
-// Console can be used with stdio functions.
-extern FILE console;
+namespace usb {
 
-class Usb {
- public:
-  static inline void Init() {
-    RingBuffer_InitBuffer(&console_send_rb_, console_send_rb_data_,
-        sizeof(console_send_rb_data_));
-    // Setup a FILE to use stdio functions for the console.
-    fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
-    USB_Init();
+extern volatile bool start_of_frame;
+
+void Init();
+
+// Reads and writes endpoint data.
+void UpdateEndpoints();
+
+// Provides a way to implement an accurate timer with a triggerrate of one
+// millisecond.
+inline bool StartOfFrameInterrupt() {
+  if (start_of_frame) {
+    start_of_frame = false;
+    return true;
   }
-
-  // Reads and writes enpoint data.
-  static void UpdateEndpoints();
-
-  // Write single byte to console endpoint.
-  static int ConsoleWrite(char byte, FILE *unused);
-
-  // Provides a way to implement an accurate timer with a triggerrate of one
-  // millisecond.
-  static inline bool StartOfFrameInterrupt() {
-    if (start_of_frame_) {
-      start_of_frame_ = false;
-      return true;
-    }
-    return false;
-  }
-
-  // Public because it is called by a C function needed by lufa, could be
-  // private otherise.
-  static inline void Tick() {
-    if (idle_time_remaining_)
-      idle_time_remaining_--;
-    start_of_frame_ = true;
-  }
-
-  // HID Specification sends idle time in a numbler multiple of 4ms.
-  // C code forces this to be public.
-  static inline u16 idle_time() { return idle_time_ / 4; }
-  static inline void set_idle_time(u8 idle_time) { idle_time_ = idle_time * 4; }
-
- private:
-  static const u8 kConsoleSendBufferSize = 128;
-
-  // Gets current report data and writes it to the keyboard endpoint.
-  static void WriteKeyboardEndpoint();
-
-  // Writes console IN endpoint. hid_listen tool needs a full IN endpoint all
-  // the time.
-  static void WriteConsoleEndpoint();
-
-  // volatile because it is set by an interrupt.
-  static volatile bool start_of_frame_;
-
-  // Current idle period in ms. This is set by the host via a Set Idle HID class
-  // request to silence the device's reports for either the entire idle
-  // duration, or until the report status changes (e.g. the user presses a key).
-  static u16 idle_time_;
-  static u16 idle_time_remaining_;
-
-  static u8 prev_data_[report::kDataSize];
-
-  static RingBuffer_t console_send_rb_;
-  static u8 console_send_rb_data_[kConsoleSendBufferSize];
-};
+  return false;
+}
 
 extern "C" {
   void EVENT_USB_Device_ConfigurationChanged(void);
@@ -97,4 +49,6 @@ extern "C" {
   void EVENT_USB_Device_StartOfFrame(void);
 }
 
-#endif // CFKW_SRC_USB_USB_H_
+}  // namespace usb
+
+#endif  // CFKW_SRC_USB_USB_H_
