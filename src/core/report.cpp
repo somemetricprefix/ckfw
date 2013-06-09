@@ -18,8 +18,7 @@
 
 u8 Report::data_[Report::kDataSize];
 
-void Report::AddKeycode(u8 keycode)
-{
+void Report::KeycodeAction(u8 keycode, bool add) {
   u8 data_index;
 
   if (IsModifier(keycode)) {
@@ -31,21 +30,28 @@ void Report::AddKeycode(u8 keycode)
 
   u8 nth_bit = (keycode % 8);
 
-  BIT_SET(data_[data_index], nth_bit);
+  if (add)
+    BIT_SET(data_[data_index], nth_bit);
+  else
+    BIT_CLR(data_[data_index], nth_bit);
+}
+
+void Report::AddKeycode(u8 keycode)
+{
+  if (!keycode)
+    return;
+
+  DEBUG("keycode+%.2x", keycode);
+
+  KeycodeAction(keycode, true);
 }
 
 void Report::RemoveKeycode(u8 keycode)
 {
-  u8 data_index;
+  if (!keycode)
+    return;
 
-  if (IsModifier(keycode)) {
-    data_index = 0;
-  } else {
-    // Adding one skips the Modifier byte.
-    data_index = 1 + (keycode / 8);
-  }
+  DEBUG("keycode-%.2x", keycode);
 
-  u8 nth_bit = (keycode % 8);
-
-  BIT_CLR(data_[data_index], nth_bit);
+  KeycodeAction(keycode, false);
 }

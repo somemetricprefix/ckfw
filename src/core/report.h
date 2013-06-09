@@ -46,6 +46,8 @@ class Report {
   static u8 data_[kDataSize];
 
   static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
+
+  static void KeycodeAction(u8 keycode, bool add);
 };
 
 #endif // CKFW_SRC_CORE_REPORT_H_
