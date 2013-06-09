@@ -43,4 +43,13 @@ typedef unsigned int uint;
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+#include <stdio.h>
+extern FILE console;
+
+#ifdef NDEBUG
+#define DEBUG(M, ...)
+#else
+#define DEBUG(M, ...) fprintf(Usb::console(), "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#endif
+
 #endif // CKFW_SRC_CORE_COMMON_H
