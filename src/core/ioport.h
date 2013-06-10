@@ -24,7 +24,7 @@
 // p - Letter of the port registers. Example: B (PORTB, DDRB, PINB)
 // b - nth bit the port register.
 #define IO_PORT(p, b) \
-{ PORT##p, DDR##p, PIN##p, b }
+{ &PORT##p, &DDR##p, &PIN##p, b }
 
 // Header only class that abstracts the general digital I/O functionality
 // of I/O ports.
@@ -32,7 +32,8 @@ class IoPort {
  public:
   // All arguments are the adress of the port registers.
   // To get constant adresses from avr-libc _SFR_ASM_COMPAT must be set to 1.
-  constexpr IoPort(u8 port, u8 ddr, u8 pin, u8 bit)
+  constexpr IoPort(volatile u8 *port, volatile u8 *ddr, volatile u8 *pin,
+                   u8 bit)
       : port_(port),
         ddr_(ddr),
         pin_(pin),
@@ -40,32 +41,32 @@ class IoPort {
     {}
 
   // Enable the internal pull-up resistors.
-  inline void PullUp() const __attribute__((optimize("-O3"))) {
-    REG_BIT_CLR(ddr_, bit_);
-    REG_BIT_SET(port_, bit_);
+  inline void PullUp() const {
+    BIT_CLR(*ddr_, bit_);
+    BIT_SET(*port_, bit_);
   }
 
   // Sets the pin to output mode and sets it to low.
   inline void WriteLow() const {
-    REG_BIT_SET(ddr_, bit_);
-    REG_BIT_CLR(port_, bit_);
+    BIT_SET(*ddr_, bit_);
+    BIT_CLR(*port_, bit_);
   }
 
   // Sets the pin to output mode and sets it to high.
   inline void WriteHigh() const {
-    REG_BIT_SET(ddr_, bit_);
-    REG_BIT_CLR(port_, bit_);
+    BIT_SET(*ddr_, bit_);
+    BIT_CLR(*port_, bit_);
   }
 
   // Returns true for high level at pin, false for low level at pin.
   inline bool Read() const {
-    return REG_BIT_IS_SET(pin_, bit_);
+    return BIT_IS_SET(*pin_, bit_);
   }
 
  private:
-  const u8 port_;
-  const u8 ddr_;
-  const u8 pin_;
+  volatile u8 *const port_;
+  volatile u8 *const ddr_;
+  volatile u8 *const pin_;
   const u8 bit_;
 
   DISALLOW_COPY_AND_ASSIGN(IoPort);

@@ -16,8 +16,6 @@
 
 #include "matrix.h"
 
-// This tell avr-libc to use constant definitions for IO names.
-#define _SFR_ASM_COMPAT 1
 #include <avr/io.h>
 
 namespace matrix {
