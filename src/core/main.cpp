@@ -17,7 +17,6 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/power.h>
-#include <avr/sleep.h>
 #include <avr/wdt.h>
 
 #include "matrix.h"
@@ -55,7 +54,5 @@ int main(void)
     }
 
     usb::UpdateEndpoints();
-
-    sleep_mode();
   }
 }
