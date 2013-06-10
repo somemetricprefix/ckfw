@@ -52,4 +52,11 @@ extern FILE console;
 #define DEBUG(M, ...) fprintf(&console, "DEBUG: " M "\n", ##__VA_ARGS__)
 #endif
 
+#include "common.h"
+#ifndef ERROR
+#define ERROR() for (;;);
+#endif
+
+#define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
+
 #endif // CKFW_SRC_CORE_COMMON_H
