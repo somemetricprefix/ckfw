@@ -81,13 +81,14 @@ void Init() {
 // Gets current report data and writes it to the keyboard endpoint.
 static void WriteKeyboardEndpoint() {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-
-  while (!Endpoint_IsReadWriteAllowed());
+  if (!Endpoint_IsINReady())
+    return;
 
   // Store last sent report statically to get to know if data has changed.
   static u8 prev_data[report::kDataSize];
   void *curr_data = report::data;
   bool send_data = false;
+
   // Send report to host if either report has changed...
   if (memcmp(prev_data, curr_data, report::kDataSize)) {
     // Get new report.
@@ -112,6 +113,8 @@ static void WriteKeyboardEndpoint() {
 // time.
 static void WriteConsoleEndpoint() {
   Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
+  if (!Endpoint_IsINReady())
+    return;
 
   // Try to send all queued bytes.
   while (Endpoint_IsReadWriteAllowed() &&
@@ -132,13 +135,8 @@ void UpdateEndpoints() {
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 
-  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-  if (Endpoint_IsINReady())
-    WriteKeyboardEndpoint();
-
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-  if (Endpoint_IsINReady())
-    WriteConsoleEndpoint();
+  WriteKeyboardEndpoint();
+  WriteConsoleEndpoint();
 }
 
 // Registers all endpoints and enables SOF interrupt.
