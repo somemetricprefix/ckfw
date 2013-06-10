@@ -131,7 +131,10 @@ static void WriteConsoleEndpoint() {
   Endpoint_ClearIN();
 }
 
-void UpdateEndpoints() {
+void Task() {
+  // LUFA handles the control endpoint.
+  USB_USBTask();
+
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 

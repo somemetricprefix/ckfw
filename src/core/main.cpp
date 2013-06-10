@@ -53,6 +53,6 @@ int main(void)
       Tick();
     }
 
-    usb::UpdateEndpoints();
+    usb::Task();
   }
 }

@@ -28,10 +28,11 @@ namespace usb {
 
 extern volatile bool start_of_frame;
 
+// Initializes all internal usb resources.
 void Init();
 
 // Reads and writes endpoint data.
-void UpdateEndpoints();
+void Task();
 
 // Provides a way to implement an accurate timer with a triggerrate of one
 // millisecond.
