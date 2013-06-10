@@ -1,6 +1,14 @@
 #ifndef CKFW_SRC_CONFIG_H_
 #define CKFW_SRC_CONFIG_H_
 
+#include <avr/io.h>
+
+// Enable Teensy onboard LED.
+#define ERROR() \
+  DDRD |= (1 << 6); \
+  PORTD |= (1 << 6); \
+  for (;;);
+
 // Defines the number of rows in the keyboard matrix.
 #define MATRIX_NUM_ROWS 4
 
