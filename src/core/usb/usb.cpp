@@ -39,6 +39,27 @@ static const u8 kConsoleSendBufferSize = 128;
 static RingBuffer_t console_send_rb;
 static u8 console_send_rb_data[kConsoleSendBufferSize];
 
+// Writes the current send ring buffer to the endpoint.
+// Returns true if buffer was written completely so that the next bytes can
+// be written to the bank directly, false otherwise.
+static bool WriteSendBuffer() {
+  while(Endpoint_IsINReady()) {
+    // Try to send all queued bytes.
+    while (!RingBuffer_IsEmpty(&console_send_rb) && 
+           Endpoint_IsReadWriteAllowed()) {
+      Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
+    }
+
+    // Clear IN request if buffer filled the bank.
+    if (!Endpoint_IsReadWriteAllowed())
+      Endpoint_ClearIN();
+
+    if (RingBuffer_IsEmpty(&console_send_rb))
+      return true;
+  }
+  return false;
+}
+
 // Writes single byte to console endpoint.
 static int ConsoleWrite(char byte, FILE *unused) {
   if (USB_DeviceState != DEVICE_STATE_Configured)
@@ -46,36 +67,17 @@ static int ConsoleWrite(char byte, FILE *unused) {
 
   Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
 
-  // Try to send all queued bytes.
-  while (Endpoint_IsReadWriteAllowed() &&
-         !RingBuffer_IsEmpty(&console_send_rb)) {
-    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
-  }
-
-  // If number of bytes in queue is greater then enpoint size clear IN.
-  if (!Endpoint_IsReadWriteAllowed())
-    Endpoint_ClearIN();
-
-  if (Endpoint_IsReadWriteAllowed()) {
-    // If possible write byte to bank directly.
-    Endpoint_Write_8(byte);
+  if (WriteSendBuffer()) {
+    Endpoint_Write_8(byte);  // Write to directly to endpoint.
+    if (!Endpoint_IsReadWriteAllowed())
+      Endpoint_ClearIN();
+  } else if (!RingBuffer_IsFull(&console_send_rb)) {
+    RingBuffer_Insert(&console_send_rb, byte);
   } else {
-    Endpoint_ClearIN();
-    if (RingBuffer_IsFull(&console_send_rb))
-      return 1;
-    else
-      RingBuffer_Insert(&console_send_rb, byte);
+    return 1;  // Buffer is already full
   }
 
   return 0;
-}
-
-void Init() {
-  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
-      sizeof(console_send_rb_data));
-  // Setup a FILE to use stdio functions for the console.
-  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
-  USB_Init();
 }
 
 // Gets current report data and writes it to the keyboard endpoint.
@@ -116,19 +118,22 @@ static void WriteConsoleEndpoint() {
   if (!Endpoint_IsINReady())
     return;
 
-  // Try to send all queued bytes.
-  while (Endpoint_IsReadWriteAllowed() &&
-         !RingBuffer_IsEmpty(&console_send_rb)) {
-    Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
-  }
+  WriteSendBuffer();
 
   // If bank is not filled yet, fill it with zeros to prevent hid_listen
   // from disconnecting.
-  for (u8 i = Endpoint_BytesInEndpoint(); i < CONSOLE_EPSIZE; i++) {
+  while (Endpoint_IsReadWriteAllowed())
     Endpoint_Write_8(0);
-  }
 
   Endpoint_ClearIN();
+}
+
+void Init() {
+  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
+      sizeof(console_send_rb_data));
+  // Setup a FILE to use stdio functions for the console.
+  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
+  USB_Init();
 }
 
 void Task() {
