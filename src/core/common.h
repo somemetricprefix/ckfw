@@ -38,13 +38,14 @@ typedef unsigned int uint;
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+#include <avr/pgmspace.h>
 #include <stdio.h>
 extern FILE console;
 
 #ifdef NDEBUG
 #define DEBUG(M, ...)
 #else
-#define DEBUG(M, ...) fprintf(&console, "DEBUG: " M "\n", ##__VA_ARGS__)
+#define DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
 #endif
 
 #include "common.h"
