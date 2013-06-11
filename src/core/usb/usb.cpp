@@ -39,46 +39,24 @@ static const u8 kConsoleSendBufferSize = 128;
 static RingBuffer_t console_send_rb;
 static u8 console_send_rb_data[kConsoleSendBufferSize];
 
-// Writes the current send ring buffer to the endpoint.
-// Returns true if buffer was written completely so that the next bytes can
-// be written to the bank directly, false otherwise.
-static bool WriteSendBuffer() {
-  while(Endpoint_IsINReady()) {
-    // Try to send all queued bytes.
-    while (!RingBuffer_IsEmpty(&console_send_rb) && 
-           Endpoint_IsReadWriteAllowed()) {
-      Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
-    }
-
-    // Clear IN request if buffer filled the bank.
-    if (!Endpoint_IsReadWriteAllowed())
-      Endpoint_ClearIN();
-
-    if (RingBuffer_IsEmpty(&console_send_rb))
-      return true;
-  }
-  return false;
-}
-
 // Writes single byte to console endpoint.
 static int ConsoleWrite(char byte, FILE *unused) {
-  if (USB_DeviceState != DEVICE_STATE_Configured)
+  if (RingBuffer_IsFull(&console_send_rb))
     return 1;
 
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-
-  if (WriteSendBuffer()) {
-    Endpoint_Write_8(byte);  // Write to directly to endpoint.
-    if (!Endpoint_IsReadWriteAllowed())
-      Endpoint_ClearIN();
-  } else if (!RingBuffer_IsFull(&console_send_rb)) {
-    RingBuffer_Insert(&console_send_rb, byte);
-  } else {
-    return 1;  // Buffer is already full
-  }
+  RingBuffer_Insert(&console_send_rb, byte);
 
   return 0;
 }
+
+void Init() {
+  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
+      sizeof(console_send_rb_data));
+  // Setup a FILE to use stdio functions for the console.
+  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
+  USB_Init();
+}
+
 
 // Gets current report data and writes it to the keyboard endpoint.
 static void WriteKeyboardEndpoint() {
@@ -118,22 +96,18 @@ static void WriteConsoleEndpoint() {
   if (!Endpoint_IsINReady())
     return;
 
-  WriteSendBuffer();
-
-  // If bank is not filled yet, fill it with zeros to prevent hid_listen
-  // from disconnecting.
-  while (Endpoint_IsReadWriteAllowed())
-    Endpoint_Write_8(0);
+  // Fill the bank with...
+  while(Endpoint_IsReadWriteAllowed()) {
+    if (!RingBuffer_IsEmpty(&console_send_rb)) {
+      // ...either the current buffered bytes or with...
+      Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
+    } else {
+      // ...zeros keep the connection to hid_listen program alive.
+      Endpoint_Write_8(0);
+    }
+  }
 
   Endpoint_ClearIN();
-}
-
-void Init() {
-  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
-      sizeof(console_send_rb_data));
-  // Setup a FILE to use stdio functions for the console.
-  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
-  USB_Init();
 }
 
 void Task() {
@@ -176,6 +150,8 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Manually clear the status stage
         Endpoint_ClearOUT();
+
+        DEBUG("HID Request: GetReport");
       }
       break;
 
@@ -188,6 +164,8 @@ void EVENT_USB_Device_ControlRequest(void) {
         // Idle period in MSB. HID Specification sends idle time in a numbler
         // multiple of 4ms.
         idle_time = (USB_ControlRequest.wValue >> 8) * 4;
+
+        DEBUG("HID Request: SetIdle - %ums", idle_time);
       }
       break;
 
@@ -201,6 +179,8 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         Endpoint_ClearIN();
         Endpoint_ClearStatusStage();
+
+        DEBUG("HID Request: GetIdle");
       }
       break;
   }
