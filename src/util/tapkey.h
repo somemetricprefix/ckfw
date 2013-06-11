@@ -35,12 +35,14 @@ class TapKey {
   inline TapKey(Key *key, u8 tap_keycode, u8 hold_keycode)
       : key_(key),
         tap_keycode_(tap_keycode),
-        hold_keycode_(hold_keycode) {}
+        hold_keycode_(hold_keycode),
+        state(0),
+        cycle(0) {}
 
   // Should be called every cycle to get accurate tap timeing.
   // other_key_pressed should be true when other keys than this one are pressed
   // to allow short hold times.
-  void Update(bool other_key_pressed) const;
+  void Update(bool other_key_pressed);
 
   inline u8 tap_keycode() const { return tap_keycode_; }
 
@@ -57,19 +59,14 @@ class TapKey {
     kHold,
   };
 
-  union TapStateMachine {
-    struct {
-      u8 state;
-      u8 cycle;
-    };
-    u16 context;
-  };
-
   Key *const key_;
   const u8 tap_keycode_;
   const u8 hold_keycode_;
 
+  u8 state;
+  u8 cycle;
+
   DISALLOW_COPY_AND_ASSIGN(TapKey);
 };
 
-#endif //CKFW_SRC_UTIL_TAPKEY_H
+#endif  //CKFW_SRC_UTIL_TAPKEY_H

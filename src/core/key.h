@@ -47,11 +47,6 @@ class Key {
            (debounce_state_ == kPressed);
   }
 
-  // context is per key variable that can be set from outside to track key
-  // states over more than one cycle.
-  inline u16 context() const { return context_; }
-  inline void set_context(u16 context) { context_ = context; }
-
  private:
   enum DebounceStates {
     kUpIdle,
@@ -65,7 +60,6 @@ class Key {
   };
 
   u8 debounce_state_;
-  u16 context_;
 };
 
 #endif // CKFW_SRC_CORE_KEY_H_

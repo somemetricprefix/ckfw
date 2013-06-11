@@ -20,30 +20,27 @@
 
 // Tapping detection is implemented in state machine because the logic is very
 // tricky to get right without one.
-void TapKey::Update(bool other_key_pressed) const {
-  TapStateMachine machine;
-  machine.context = key_->context();
+void TapKey::Update(bool other_key_pressed) {
+  const bool timeout = (cycle == kTapThreshold);
 
-  const bool timeout = (machine.cycle == kTapThreshold);
-
-  switch (machine.state) {
+  switch (state) {
     case TapStates::kStart:
       if (key_->Pressed()) {
         report::AddKeycode(hold_keycode_);
-        machine.cycle = 0;
-        machine.state = TapStates::kWaitTapRelease1;
+        cycle = 0;
+        state = TapStates::kWaitTapRelease1;
       }
       break;
 
     case TapStates::kWaitTapRelease1:
       if (other_key_pressed || timeout) {
-        machine.state = TapStates::kHold;
+        state = TapStates::kHold;
       } else if (key_->Released()) {
         report::RemoveKeycode(hold_keycode_);
         report::AddKeycode(tap_keycode_);
-        machine.state = TapStates::kTap;
+        state = TapStates::kTap;
       } else {
-        machine.cycle++;
+        cycle++;
       }
       break;
 
@@ -51,23 +48,23 @@ void TapKey::Update(bool other_key_pressed) const {
       report::RemoveKeycode(tap_keycode_);
       if (key_->Pressed()) {
         report::AddKeycode(tap_keycode_);
-        machine.cycle = 0;
-        machine.state = kWaitTapRelease2;
+        cycle = 0;
+        state = kWaitTapRelease2;
       } else {
-        machine.cycle = 0;
-        machine.state = kWaitTapPress;
+        cycle = 0;
+        state = kWaitTapPress;
       }
       break;
 
     case TapStates::kWaitTapPress:
       if (timeout) {
-        machine.state = kStart;
+        state = kStart;
       } else if (key_->Pressed()) {
         report::AddKeycode(tap_keycode_);
-        machine.cycle = 0;
-        machine.state = kWaitTapRelease2;
+        cycle = 0;
+        state = kWaitTapRelease2;
       } else {
-        machine.cycle++;
+        cycle++;
       }
       break;
 
@@ -75,30 +72,28 @@ void TapKey::Update(bool other_key_pressed) const {
       if (other_key_pressed) {
         report::RemoveKeycode(tap_keycode_);
         report::AddKeycode(hold_keycode_);
-        machine.state = TapStates::kHold;
+        state = TapStates::kHold;
       } else if (timeout) {
-        machine.state = TapStates::kTapHold;
+        state = TapStates::kTapHold;
       } else if (key_->Released()) {
-        machine.state = TapStates::kTap;
+        state = TapStates::kTap;
       } else {
-        machine.cycle++;
+        cycle++;
       }
       break;
 
     case TapStates::kTapHold:
       if (key_->Released()) {
         report::RemoveKeycode(tap_keycode_);
-        machine.state = kStart;
+        state = kStart;
       }
       break;
 
     case TapStates::kHold:
       if (key_->Released()) {
         report::RemoveKeycode(hold_keycode_);
-        machine.state = kStart;
+        state = kStart;
       }
       break;
   }
-
-  key_->set_context(machine.context);
 }

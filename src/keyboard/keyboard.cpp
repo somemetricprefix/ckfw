@@ -21,6 +21,8 @@
 
 static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] = { KEYMAP };
 
+static TapKey tap_key(&matrix::keys[3][5], KC_BSPACE, KC_RSHIFT);
+
 void Tick() {
   u8 num_keys_pressed = 0;
   for (u8 row = 0; row < matrix::kNumRows; row++) {
@@ -35,6 +37,5 @@ void Tick() {
     }
   }
 
-  TapKey tap_key(&matrix::keys[3][6], KC_BSPACE, KC_RSHIFT);
   tap_key.Update(num_keys_pressed);
 }
