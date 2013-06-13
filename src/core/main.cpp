@@ -49,7 +49,7 @@ int main(void)
 
   for (;;) {
     if (usb::StartOfFrameInterrupt()) {
-      matrix::Scan();
+      matrix::Update();
       Tick();
     }
 

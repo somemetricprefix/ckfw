@@ -16,6 +16,7 @@
 
 #include "tapkey.h"
 
+#include "core/matrix.h"
 #include "core/report.h"
 
 // Tapping detection is implemented in state machine because the logic is very
@@ -25,7 +26,7 @@ void TapKey::Update(bool other_key_pressed) {
 
   switch (state) {
     case TapStates::kStart:
-      if (key_->Pressed()) {
+      if (matrix::KeyPressed(row_, column_)) {
         report::AddKeycode(hold_keycode_);
         cycle = 0;
         state = TapStates::kWaitTapRelease1;
@@ -35,7 +36,7 @@ void TapKey::Update(bool other_key_pressed) {
     case TapStates::kWaitTapRelease1:
       if (other_key_pressed || timeout) {
         state = TapStates::kHold;
-      } else if (key_->Released()) {
+      } else if (matrix::KeyReleased(row_, column_)) {
         report::RemoveKeycode(hold_keycode_);
         report::AddKeycode(tap_keycode_);
         state = TapStates::kTap;
@@ -46,7 +47,7 @@ void TapKey::Update(bool other_key_pressed) {
 
     case TapStates::kTap:
       report::RemoveKeycode(tap_keycode_);
-      if (key_->Pressed()) {
+      if (matrix::KeyPressed(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         cycle = 0;
         state = kWaitTapRelease2;
@@ -59,7 +60,7 @@ void TapKey::Update(bool other_key_pressed) {
     case TapStates::kWaitTapPress:
       if (timeout) {
         state = kStart;
-      } else if (key_->Pressed()) {
+      } else if (matrix::KeyPressed(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         cycle = 0;
         state = kWaitTapRelease2;
@@ -75,7 +76,7 @@ void TapKey::Update(bool other_key_pressed) {
         state = TapStates::kHold;
       } else if (timeout) {
         state = TapStates::kTapHold;
-      } else if (key_->Released()) {
+      } else if (matrix::KeyReleased(row_, column_)) {
         state = TapStates::kTap;
       } else {
         cycle++;
@@ -83,14 +84,14 @@ void TapKey::Update(bool other_key_pressed) {
       break;
 
     case TapStates::kTapHold:
-      if (key_->Released()) {
+      if (matrix::KeyReleased(row_, column_)) {
         report::RemoveKeycode(tap_keycode_);
         state = kStart;
       }
       break;
 
     case TapStates::kHold:
-      if (key_->Released()) {
+      if (matrix::KeyReleased(row_, column_)) {
         report::RemoveKeycode(hold_keycode_);
         state = kStart;
       }

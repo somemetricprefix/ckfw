@@ -19,21 +19,35 @@
 
 #include "common.h"
 #include "config.h"
-#include "ioport.h"
-#include "key.h"
 
 namespace matrix {
 
-const u8 kNumRows = MATRIX_NUM_ROWS;
-const u8 kNumColumns = MATRIX_NUM_COLUMNS;
+#define AS_STRUCT(port, ddr, pin, bit, id) u8 id;
+struct __NumRows { MATRIX_ROW_PORTS(AS_STRUCT) };
+struct __NumColumns { MATRIX_COLUMN_PORTS(AS_STRUCT) };
 
-extern Key keys[kNumRows][kNumColumns];
+const u8 kNumRows = sizeof(__NumRows);
+const u8 kNumColumns = sizeof(__NumColumns);
+
+extern u8 key_matrix[kNumRows][kNumColumns];
+
+// Returns true if a key changed from up posistin to down position, false
+// otherwise.
+inline bool KeyPressed(u8 row, u8 col) {
+  return BIT_IS_SET(key_matrix[row][col], 7);
+}
+
+// Returns true if a key changed from up posistin to down position, false
+// otherwise.
+inline bool KeyReleased(u8 row, u8 col) {
+  return BIT_IS_SET(key_matrix[row][col], 6);
+}
 
 // Initializes the I/O ports of the keys.
 void Init();
 
 // Updates the keys with the current key states.
-void Scan();
+void Update();
 
 }  // namespace matrix
 

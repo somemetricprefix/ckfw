@@ -21,17 +21,17 @@
 
 static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] = { KEYMAP };
 
-static TapKey tap_key(&matrix::keys[3][5], KC_BSPACE, KC_RSHIFT);
+static TapKey tap_key(3, 5, KC_BSPACE, KC_RSHIFT);
 
 void Tick() {
   u8 num_keys_pressed = 0;
+
   for (u8 row = 0; row < matrix::kNumRows; row++) {
     for (u8 col = 0; col < matrix::kNumColumns; col++) {
-      const Key &key = matrix::keys[row][col];
-      if (key.Pressed()) {
+      if (matrix::KeyPressed(row, col)) {
         report::AddKeycode(keymap[row][col]);
         num_keys_pressed++;
-      } else if (key.Released()) {
+      } else if (matrix::KeyReleased(row, col)) {
         report::RemoveKeycode(keymap[row][col]);
       }
     }

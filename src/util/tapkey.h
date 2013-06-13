@@ -17,7 +17,7 @@
 #ifndef CKFW_SRC_UTIL_TAPKEY_H
 #define CKFW_SRC_UTIL_TAPKEY_H
 
-#include "core/key.h"
+#include "core/common.h"
 
 // A short key press is calles "tap". Tap keys send a keycode when they are
 // released shortly after they've been pressed. If the key is held or anther
@@ -32,8 +32,9 @@ class TapKey {
   // Maximum value is 255 because this is a unsigned 8bit value.
   static const u8 kTapThreshold = 200;
 
-  inline TapKey(Key *key, u8 tap_keycode, u8 hold_keycode)
-      : key_(key),
+  inline TapKey(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
+      : row_(row),
+        column_(col),
         tap_keycode_(tap_keycode),
         hold_keycode_(hold_keycode),
         state(0),
@@ -59,7 +60,8 @@ class TapKey {
     kHold,
   };
 
-  Key *const key_;
+  const u8 row_;
+  const u8 column_;
   const u8 tap_keycode_;
   const u8 hold_keycode_;
 
