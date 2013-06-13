@@ -67,13 +67,13 @@ enum { MATRIX_COLUMN_PORTS(AS_ENUM) };
 // level thus the logic has to be inverted here.
 // Current key value is shifted left once to put the new input value in the
 // first bit.
-#define AS_READ_INPUT(port, ddr, pin, bit, id) \
-  ASSERT(!BIT_IS_SET(ddr, bit)); \
-  ASSERT(BIT_IS_SET(port, bit)); \
-  key_matrix[row][id] <<= 1; \
-  if (!BIT_IS_SET(pin, bit)) { \
-    BIT_SET(key_matrix[row][id], 0); \
-  }
+#define AS_READ_INPUT(port, ddr, pin, bit, id) { \
+  u8 key = key_matrix[row][id]; \
+  key <<= 1; \
+  if (!BIT_IS_SET(pin, bit)) \
+    key += 1; /* += generates an inc instruction, |= generates ldi + or */ \
+  key_matrix[row][id] = key; \
+}
 
 void Update() {
   // First pass: scan matrix
