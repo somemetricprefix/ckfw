@@ -97,10 +97,10 @@ void Update() {
       // 5 cycles after that set pressed or released bit.
       if (key == 0b011111) {  // 0 -> 1 indicates key press.
         BIT_SET(key, 7);
-        DEBUG("key+%2u,%2u", i, j);
+        DEBUG("+key\t\t%u,%u", i, j);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
         BIT_SET(key, 6);
-        DEBUG("key-%2u,%2u", i, j);
+        DEBUG("-key\t\t%u,%u", i, j);
       }
 
       // Put updated key back in buffer.
