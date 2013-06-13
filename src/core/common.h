@@ -43,8 +43,10 @@ typedef unsigned int uint;
 extern FILE console;
 
 #ifdef NDEBUG
+#define ASSERT(cond)
 #define DEBUG(M, ...)
 #else
+#define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
 #define DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
 #endif
 
@@ -52,7 +54,5 @@ extern FILE console;
 #ifndef ERROR
 #define ERROR() for (;;);
 #endif
-
-#define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
 
 #endif // CKFW_SRC_CORE_COMMON_H
