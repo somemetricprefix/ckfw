@@ -42,6 +42,11 @@ typedef unsigned int uint;
 #include <stdio.h>
 extern FILE console;
 
+#include "config.h"
+#ifndef ERROR
+#define ERROR() for (;;);
+#endif
+
 #ifdef NDEBUG
 #define ASSERT(cond)
 #define DEBUG(M, ...)
@@ -50,9 +55,6 @@ extern FILE console;
 #define DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
 #endif
 
-#include "common.h"
-#ifndef ERROR
-#define ERROR() for (;;);
-#endif
+#define PRINT(M, ...) fprintf_P(&console, PSTR(M), ##__VA_ARGS__)
 
 #endif // CKFW_SRC_CORE_COMMON_H
