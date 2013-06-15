@@ -26,7 +26,7 @@ struct OutputPort {
   const u8 bit;
 };
 
-#define AS_DATA(port, ddr, pin, bit, id) { (u16)&port, (u16)&ddr, bit },
+#define AS_DATA(port, bit) { (u16)&PORT##port, (u16)&DDR##port, bit },
 static const OutputPort row_ports[kNumRows] = { MATRIX_ROW_PORTS(AS_DATA) };
 
 // Each key is represented as an 8-bit value.
@@ -38,9 +38,9 @@ static const OutputPort row_ports[kNumRows] = { MATRIX_ROW_PORTS(AS_DATA) };
 u8 key_matrix[kNumRows][kNumColumns];
 
 // Pull up on IO port is enabled by setting DDRx = 0 and PORTx = 1.
-#define AS_PULLUP(port, ddr, pin, bit, id) \
-  BIT_CLR(ddr, bit); \
-  BIT_SET(port, bit);
+#define AS_PULLUP(port, bit) \
+  BIT_CLR(DDR##port, bit); \
+  BIT_SET(PORT##port, bit);
 
 void Init() {
   // Configure column ports as input with pull-up.
@@ -60,19 +60,19 @@ static inline void DeselectRow(u8 row) {
 }
 
 // Translates to id to a index. Used as "static counter".
-#define AS_ENUM(port, ddr, pin, bit, id) id,
+#define AS_ENUM(port, bit) ID(port, bit),
 enum { MATRIX_COLUMN_PORTS(AS_ENUM) };
 
 // Pull-ups pins are used on input and key press pulls the input to low
 // level thus the logic has to be inverted here.
 // Current key value is shifted left once to put the new input value in the
 // first bit.
-#define AS_READ_INPUT(port, ddr, pin, bit, id) { \
-  u8 key = key_matrix[row][id]; \
+#define AS_READ_INPUT(port, bit) { \
+  u8 key = key_matrix[row][ID(port, bit)]; \
   key <<= 1; \
-  if (!BIT_IS_SET(pin, bit)) \
+  if (!BIT_IS_SET(PIN##port, bit)) \
     key += 1; /* += generates an inc instruction, |= generates ldi + or */ \
-  key_matrix[row][id] = key; \
+  key_matrix[row][ID(port, bit)] = key; \
 }
 
 void Update() {

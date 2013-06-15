@@ -15,30 +15,25 @@
 // Defines the number of columns in the keyboard matrix.
 #define MATRIX_NUM_COLUMNS 10
 
-// Helper macro for easy port definions.
-// p - Letter of the port registers. Expands to PORTB, DDRB and PINB.
-// b - nth bit the port register.
-#define PORT(p, b, ENTRY) ENTRY(PORT##p, DDR##p, PIN##p, b, kPort##p##b)
-
 // Pin mapping for row pins.
-#define MATRIX_ROW_PORTS(ENTRY) \
-  PORT(B, 1, ENTRY) \
-  PORT(B, 0, ENTRY) \
-  PORT(B, 3, ENTRY) \
-  PORT(B, 2, ENTRY)
+#define MATRIX_ROW_PORTS(PORT) \
+  PORT(B, 1) \
+  PORT(B, 0) \
+  PORT(B, 3) \
+  PORT(B, 2)
 
 // Pin mapping for column pins.
-#define MATRIX_COLUMN_PORTS(ENTRY) \
-  PORT(F, 0, ENTRY) \
-  PORT(F, 1, ENTRY) \
-  PORT(F, 5, ENTRY) \
-  PORT(F, 4, ENTRY) \
-  PORT(F, 6, ENTRY) \
-  PORT(F, 7, ENTRY) \
-  PORT(B, 6, ENTRY) \
-  PORT(B, 5, ENTRY) \
-  PORT(B, 4, ENTRY) \
-  PORT(D, 7, ENTRY)
+#define MATRIX_COLUMN_PORTS(PORT) \
+  PORT(F, 0) \
+  PORT(F, 1) \
+  PORT(F, 5) \
+  PORT(F, 4) \
+  PORT(F, 6) \
+  PORT(F, 7) \
+  PORT(B, 6) \
+  PORT(B, 5) \
+  PORT(B, 4) \
+  PORT(D, 7)
 
 // BuTECK layout
 // B U . , X P C L M F

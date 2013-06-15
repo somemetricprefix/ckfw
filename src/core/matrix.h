@@ -22,7 +22,8 @@
 
 namespace matrix {
 
-#define AS_STRUCT(port, ddr, pin, bit, id) u8 id;
+#define ID(port, bit) kPort##port##bit
+#define AS_STRUCT(port, bit) u8 ID(port, bit);
 struct __NumRows { MATRIX_ROW_PORTS(AS_STRUCT) };
 struct __NumColumns { MATRIX_COLUMN_PORTS(AS_STRUCT) };
 
