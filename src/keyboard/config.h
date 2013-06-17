@@ -17,17 +17,17 @@
 
 // Pin mapping for row pins.
 #define MATRIX_ROW_PORTS(PORT) \
-  PORT(B, 1) \
   PORT(B, 0) \
-  PORT(B, 3) \
-  PORT(B, 2)
+  PORT(B, 1) \
+  PORT(B, 2) \
+  PORT(B, 3)
 
 // Pin mapping for column pins.
 #define MATRIX_COLUMN_PORTS(PORT) \
   PORT(F, 0) \
   PORT(F, 1) \
-  PORT(F, 5) \
   PORT(F, 4) \
+  PORT(F, 5) \
   PORT(F, 6) \
   PORT(F, 7) \
   PORT(B, 6) \
@@ -41,8 +41,8 @@
 // K Y Ö Ä Ü J G W V Z
 #define KEYMAP \
 { KC_B, KC_U, KC_DOT, KC_COMM, KC_X, KC_P, KC_C, KC_L, KC_M, KC_F }, \
-{ KC_H, KC_I, KC_E, KC_A, KC_O, KC_D, KC_T, KC_R, KC_N, KC_S }, \
+{ KC_H, KC_I, KC_E, 0, KC_O, KC_D, 0, KC_R, KC_N, KC_S }, \
 { KC_K, KC_Z, KC_SCLN, KC_QUOT, KC_LBRC, KC_J, KC_G, KC_W, KC_V, KC_Y }, \
-{ 0, 0, KC_TAB, KC_SPC, KC_ENT, 0, 0, 0, 0, 0 }
+{ 0, 0, KC_TAB, KC_SPC, KC_ENT, 0, KC_BSPACE, 0, 0, 0 }
 
 #endif // CKFW_SRC_CONFIG_H_
