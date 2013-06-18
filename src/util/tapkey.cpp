@@ -27,7 +27,6 @@ void TapKey::Update(bool other_key_pressed) {
   switch (state) {
     case TapStates::kStart:
       if (matrix::KeyPressed(row_, column_)) {
-        report::AddKeycode(hold_keycode_);
         cycle = 0;
         state = TapStates::kWaitTapRelease1;
       }
@@ -35,9 +34,9 @@ void TapKey::Update(bool other_key_pressed) {
 
     case TapStates::kWaitTapRelease1:
       if (other_key_pressed || timeout) {
+        report::AddKeycode(hold_keycode_);
         state = TapStates::kHold;
       } else if (matrix::KeyReleased(row_, column_)) {
-        report::RemoveKeycode(hold_keycode_);
         report::AddKeycode(tap_keycode_);
         state = TapStates::kTap;
       } else {
