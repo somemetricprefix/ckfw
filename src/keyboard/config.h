@@ -35,14 +35,4 @@
   PORT(B, 4) \
   PORT(D, 7)
 
-// BuTECK layout
-// B U . , X P C L M F
-// H I E A O D T R N S
-// K Y Ö Ä Ü J G W V Z
-#define KEYMAP \
-{ KC_B, KC_U, KC_DOT, KC_COMM, KC_X, KC_P, KC_C, KC_L, KC_M, KC_F }, \
-{ KC_H, KC_I, KC_E, 0, KC_O, KC_D, 0, KC_R, KC_N, KC_S }, \
-{ KC_K, KC_Z, KC_SCLN, KC_QUOT, KC_LBRC, KC_J, KC_G, KC_W, KC_V, KC_Y }, \
-{ 0, 0, KC_TAB, KC_SPC, KC_ENT, 0, KC_BSPACE, 0, 0, 0 }
-
 #endif // CKFW_SRC_CONFIG_H_
