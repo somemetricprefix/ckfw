@@ -29,8 +29,6 @@ void Init() {}
 __attribute__((weak))
 void Tick() {}
 
-#include "keycodes.h"
-
 int main(void)
 {
   // Disable watchdog if enabled by bootloader/fuses
