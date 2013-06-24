@@ -5,9 +5,10 @@
 
 // Enable Teensy onboard LED.
 #define ERROR() \
+do { \
   DDRD |= (1 << 6); \
   PORTD |= (1 << 6); \
-  for (;;);
+} while (0);
 
 // Defines the number of rows in the keyboard matrix.
 #define MATRIX_NUM_ROWS 4
