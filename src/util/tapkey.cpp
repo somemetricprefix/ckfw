@@ -27,7 +27,7 @@ void TapKey::Update(bool other_key_pressed) {
 
   switch (state) {
     case TapStates::kStart:
-      if (matrix::KeyPressed(row_, column_)) {
+      if (matrix::KeyDown(row_, column_)) {
         start_frame = usb::frame_number;
         state = TapStates::kWaitTapRelease1;
       }
@@ -37,7 +37,7 @@ void TapKey::Update(bool other_key_pressed) {
       if (other_key_pressed || timeout) {
         report::AddKeycode(hold_keycode_);
         state = TapStates::kHold;
-      } else if (matrix::KeyReleased(row_, column_)) {
+      } else if (!matrix::KeyDown(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         state = TapStates::kTap;
       }
@@ -45,7 +45,7 @@ void TapKey::Update(bool other_key_pressed) {
 
     case TapStates::kTap:
       report::RemoveKeycode(tap_keycode_);
-      if (matrix::KeyPressed(row_, column_)) {
+      if (matrix::KeyDown(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         start_frame = usb::frame_number;
         state = kWaitTapRelease2;
@@ -58,7 +58,7 @@ void TapKey::Update(bool other_key_pressed) {
     case TapStates::kWaitTapPress:
       if (timeout) {
         state = kStart;
-      } else if (matrix::KeyPressed(row_, column_)) {
+      } else if (matrix::KeyDown(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         start_frame = usb::frame_number;
         state = kWaitTapRelease2;
@@ -72,20 +72,20 @@ void TapKey::Update(bool other_key_pressed) {
         state = TapStates::kHold;
       } else if (timeout) {
         state = TapStates::kTapHold;
-      } else if (matrix::KeyReleased(row_, column_)) {
+      } else if (!matrix::KeyDown(row_, column_)) {
         state = TapStates::kTap;
       }
       break;
 
     case TapStates::kTapHold:
-      if (matrix::KeyReleased(row_, column_)) {
+      if (!matrix::KeyDown(row_, column_)) {
         report::RemoveKeycode(tap_keycode_);
         state = kStart;
       }
       break;
 
     case TapStates::kHold:
-      if (matrix::KeyReleased(row_, column_)) {
+      if (!matrix::KeyDown(row_, column_)) {
         report::RemoveKeycode(hold_keycode_);
         state = kStart;
       }
