@@ -18,16 +18,17 @@
 
 #include "core/matrix.h"
 #include "core/report.h"
+#include "core/usb/usb.h"
 
 // Tapping detection is implemented in state machine because the logic is very
 // tricky to get right without one.
 void TapKey::Update(bool other_key_pressed) {
-  const bool timeout = (cycle == kTapThreshold);
+  const bool timeout = (usb::frame_number - start_frame) > kTapThreshold;
 
   switch (state) {
     case TapStates::kStart:
       if (matrix::KeyPressed(row_, column_)) {
-        cycle = 0;
+        start_frame = usb::frame_number;
         state = TapStates::kWaitTapRelease1;
       }
       break;
@@ -39,8 +40,6 @@ void TapKey::Update(bool other_key_pressed) {
       } else if (matrix::KeyReleased(row_, column_)) {
         report::AddKeycode(tap_keycode_);
         state = TapStates::kTap;
-      } else {
-        cycle++;
       }
       break;
 
@@ -48,10 +47,10 @@ void TapKey::Update(bool other_key_pressed) {
       report::RemoveKeycode(tap_keycode_);
       if (matrix::KeyPressed(row_, column_)) {
         report::AddKeycode(tap_keycode_);
-        cycle = 0;
+        start_frame = usb::frame_number;
         state = kWaitTapRelease2;
       } else {
-        cycle = 0;
+        start_frame = usb::frame_number;
         state = kWaitTapPress;
       }
       break;
@@ -61,10 +60,8 @@ void TapKey::Update(bool other_key_pressed) {
         state = kStart;
       } else if (matrix::KeyPressed(row_, column_)) {
         report::AddKeycode(tap_keycode_);
-        cycle = 0;
+        start_frame = usb::frame_number;
         state = kWaitTapRelease2;
-      } else {
-        cycle++;
       }
       break;
 
@@ -77,8 +74,6 @@ void TapKey::Update(bool other_key_pressed) {
         state = TapStates::kTapHold;
       } else if (matrix::KeyReleased(row_, column_)) {
         state = TapStates::kTap;
-      } else {
-        cycle++;
       }
       break;
 

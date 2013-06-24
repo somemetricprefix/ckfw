@@ -26,23 +26,14 @@
 
 namespace usb {
 
-extern volatile bool start_of_frame;
+// Used as "systick"
+extern volatile u16 frame_number;
 
 // Initializes all internal usb resources.
 void Init();
 
 // Reads and writes endpoint data.
 void Task();
-
-// Provides a way to implement an accurate timer with a triggerrate of one
-// millisecond.
-inline bool StartOfFrameInterrupt() {
-  if (start_of_frame) {
-    start_of_frame = false;
-    return true;
-  }
-  return false;
-}
 
 extern "C" {
   void EVENT_USB_Device_ConfigurationChanged(void);

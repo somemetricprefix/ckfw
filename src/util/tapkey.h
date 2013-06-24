@@ -38,9 +38,8 @@ class TapKey {
         tap_keycode_(tap_keycode),
         hold_keycode_(hold_keycode),
         state(0),
-        cycle(0) {}
+        start_frame(0) {}
 
-  // Should be called every cycle to get accurate tap timeing.
   // other_key_pressed should be true when other keys than this one are pressed
   // to allow short hold times.
   void Update(bool other_key_pressed);
@@ -66,7 +65,7 @@ class TapKey {
   const u8 hold_keycode_;
 
   u8 state;
-  u8 cycle;
+  u16 start_frame;
 
   DISALLOW_COPY_AND_ASSIGN(TapKey);
 };

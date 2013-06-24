@@ -46,9 +46,13 @@ int main(void)
   sei();
 
   for (;;) {
-    if (usb::StartOfFrameInterrupt()) {
+    // The frame number changes every millisecond. The debounce code relies
+    // on that.
+    static u16 prev_frame;
+    if (usb::frame_number != prev_frame) {
       matrix::Update();
       Tick();
+      prev_frame = usb::frame_number;
     }
 
     usb::Task();

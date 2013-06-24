@@ -24,7 +24,7 @@ FILE console;
 
 namespace usb {
 
-volatile bool start_of_frame = false;
+volatile u16 frame_number;
 
 // Current idle period in ms. This is set by the host via a Set Idle HID class
 // request to silence the device's reports for either the entire idle
@@ -189,7 +189,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 void EVENT_USB_Device_StartOfFrame(void) {
   if (idle_time_remaining)
     --idle_time_remaining;
-  start_of_frame = true;
+  frame_number = USB_Device_GetFrameNumber();
 }
 
 }  // namespace usb
