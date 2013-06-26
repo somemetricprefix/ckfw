@@ -22,10 +22,7 @@
 
 namespace matrix {
 
-// ID macro generates a unique name for each entry in the port mapping list.
 #define ID(port, bit) kPort##port##bit
-
-// Those structs are only defined to get the length of the port mapping list.
 #define AS_STRUCT(port, bit) u8 ID(port, bit);
 struct __NumRows { MATRIX_ROW_PORTS(AS_STRUCT) };
 struct __NumColumns { MATRIX_COLUMN_PORTS(AS_STRUCT) };
@@ -35,22 +32,15 @@ const u8 kNumColumns = sizeof(__NumColumns);
 
 extern u8 key_matrix[kNumRows][kNumColumns];
 
-// WARNING: Press event can be missed if it is not checked every millisecond.
 // Returns true if a key changed from up posistin to down position, false
 // otherwise.
 inline bool KeyPressed(u8 row, u8 col) {
-  return (key_matrix[row][col] & 0b11000000) == 0b11000000;
+  return BIT_IS_SET(key_matrix[row][col], 7);
 }
 
-// WARNING: Release event can be missed if it is not checked every millisecond.
 // Returns true if a key changed from up posistin to down position, false
 // otherwise.
 inline bool KeyReleased(u8 row, u8 col) {
-  return (key_matrix[row][col] & 0b11000000) == 0b10000000;
-}
-
-// Returns true if a is held down, false otherwise.
-inline bool KeyDown(u8 row, u8 col) {
   return BIT_IS_SET(key_matrix[row][col], 6);
 }
 

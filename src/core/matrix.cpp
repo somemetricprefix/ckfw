@@ -90,18 +90,16 @@ void Update() {
   // http://geekhack.org/index.php?topic=42385.msg861321#msg861321
   for (u8 i = 0; i < kNumRows; i++) {
     for (u8 j = 0; j < kNumColumns; j++) {
-      // Apply mask to get the 7 state bits.
-      u8 key = key_matrix[i][j] & 0b01111111;
+      // Apply mask to get the 6 state bits.
+      u8 key = key_matrix[i][j] & 0b00111111;
 
       // Check for change between 6th and 5th bit. If the key was stable for
       // 5 cycles after that set pressed or released bit.
-      if (key == 0b1011111) {  // 0 -> 1 indicates key press.
+      if (key == 0b011111) {  // 0 -> 1 indicates key press.
         BIT_SET(key, 7);
-        BIT_SET(key, 6);
         DEBUG("+key\t\t%u,%u", i, j);
-      } else if (key == 0b0100000) {  // 1 -> 0 indicates key release.
-        BIT_SET(key, 7);
-        BIT_CLR(key, 6);
+      } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
+        BIT_SET(key, 6);
         DEBUG("-key\t\t%u,%u", i, j);
       }
 

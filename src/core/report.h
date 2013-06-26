@@ -27,26 +27,11 @@ namespace report {
 const u8 kDataSize = 16;
 extern u8 data[kDataSize];
 
-// Sets the keycode state in the report.
-void KeycodeAction(u8 keycode, bool add);
-
 // Adds an keycode to report data.
-inline void AddKeycode(u8 keycode)
-{
-  if (!keycode)
-    return;
-
-  KeycodeAction(keycode, true);
-}
+void AddKeycode(u8 keycode);
 
 // Removes an keycode report data.
-inline void RemoveKeycode(u8 keycode)
-{
-  if (!keycode)
-    return;
-
-  KeycodeAction(keycode, false);
-}
+void RemoveKeycode(u8 keycode);
 
 }  // namespace report
 

@@ -36,7 +36,7 @@ u8 data[report::kDataSize] = { 0 };
 
 static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
 
-void KeycodeAction(u8 keycode, bool add) {
+static void KeycodeAction(u8 keycode, bool add) {
   u8 data_index;
 
   if (IsModifier(keycode)) {
@@ -48,15 +48,30 @@ void KeycodeAction(u8 keycode, bool add) {
 
   u8 nth_bit = (keycode % 8);
 
-  if (add) {
-    if (!BIT_IS_SET(data[data_index], nth_bit))
-      DEBUG("+keycode\t\t%.2X", keycode);
+  if (add)
     BIT_SET(data[data_index], nth_bit);
-  } else {
-    if (BIT_IS_SET(data[data_index], nth_bit))
-      DEBUG("-keycode\t\t%.2X", keycode);
+  else
     BIT_CLR(data[data_index], nth_bit);
-  }
+}
+
+void AddKeycode(u8 keycode)
+{
+  if (!keycode)
+    return;
+
+  DEBUG("+keycode\t\t%.2X", keycode);
+
+  KeycodeAction(keycode, true);
+}
+
+void RemoveKeycode(u8 keycode)
+{
+  if (!keycode)
+    return;
+
+  DEBUG("-keycode\t\t%.2X", keycode);
+
+  KeycodeAction(keycode, false);
 }
 
 }  // namespace report

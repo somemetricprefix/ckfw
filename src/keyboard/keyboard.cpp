@@ -41,15 +41,15 @@ void Tick() {
 
   for (u8 row = 0; row < matrix::kNumRows; row++) {
     for (u8 col = 0; col < matrix::kNumColumns; col++) {
-      if (matrix::KeyDown(row, col)) {
+      if (matrix::KeyPressed(row, col)) {
         report::AddKeycode(keymap[row][col]);
         num_keys_pressed++;
-      } else {
+      } else if (matrix::KeyReleased(row, col)) {
         report::RemoveKeycode(keymap[row][col]);
       }
     }
   }
 
   for (TapKey &tap_key : tap_keys)
-    tap_key.Update(num_keys_pressed > 1);
+    tap_key.Update(num_keys_pressed);
 }
