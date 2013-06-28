@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "core/eventqueue.h"
 #include "core/matrix.h"
 #include "core/report.h"
 #include "util/keycodes.h"
@@ -39,14 +40,14 @@ static TapKey tap_keys[] = {
 void Tick() {
   u8 num_keys_pressed = 0;
 
-  for (u8 row = 0; row < matrix::kNumRows; row++) {
-    for (u8 col = 0; col < matrix::kNumColumns; col++) {
-      if (matrix::KeyPressed(row, col)) {
-        report::AddKeycode(keymap[row][col]);
-        num_keys_pressed++;
-      } else if (matrix::KeyReleased(row, col)) {
-        report::RemoveKeycode(keymap[row][col]);
-      }
+  while (!EventQueueEmpty()) {
+    Event *ev = EventQueueRead();
+    u8 keycode = keymap[ev->row][ev->column];
+    if (ev->type == kPressed) {
+      report::AddKeycode(keycode);
+      num_keys_pressed++;
+    } else if (ev->type == kReleased) {
+      report::RemoveKeycode(keycode);
     }
   }
 
