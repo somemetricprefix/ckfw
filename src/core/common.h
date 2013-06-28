@@ -49,10 +49,12 @@ extern FILE console;
 
 #ifdef NDEBUG
 #define ASSERT(cond)
-#define DEBUG(M, ...)
+#define LOG_DEBUG(M, ...)
+#define LOG_WARNING(M, ...)
 #else
 #define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
-#define DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
+#define LOG_DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
+#define LOG_WARNING(M, ...) fprintf_P(&console, PSTR("WARNING: " M "\n"), ##__VA_ARGS__)
 #endif
 
 #define PRINT(M, ...) fprintf_P(&console, PSTR(M), ##__VA_ARGS__)

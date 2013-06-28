@@ -18,6 +18,8 @@
 
 #include <avr/io.h>
 
+#include "eventqueue.h"
+
 namespace matrix {
 
 struct OutputPort {
@@ -96,11 +98,23 @@ void Update() {
       // Check for change between 6th and 5th bit. If the key was stable for
       // 5 cycles after that set pressed or released bit.
       if (key == 0b011111) {  // 0 -> 1 indicates key press.
+        Event *ev = EventQueueWrite();
+        if (ev)
+          WriteEvent(ev, kPressed, i, j);
+        else
+          LOG_WARNING("Eventqueue is full.");
+
         BIT_SET(key, 7);
-        DEBUG("+key\t\t%u,%u", i, j);
+        LOG_DEBUG("+key\t\t%u,%u", i, j);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
+        Event *ev = EventQueueWrite();
+        if (ev)
+          WriteEvent(ev, kReleased, i, j);
+        else
+          LOG_WARNING("Eventqueue is full.");
+
         BIT_SET(key, 6);
-        DEBUG("-key\t\t%u,%u", i, j);
+        LOG_DEBUG("-key\t\t%u,%u", i, j);
       }
 
       // Put updated key back in buffer.

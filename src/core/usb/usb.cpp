@@ -148,7 +148,7 @@ void EVENT_USB_Device_ControlRequest(void) {
         // Manually clear the status stage
         Endpoint_ClearOUT();
 
-        DEBUG("HID Request: GetReport");
+        LOG_DEBUG("HID Request: GetReport");
       }
       break;
 
@@ -162,7 +162,7 @@ void EVENT_USB_Device_ControlRequest(void) {
         // multiple of 4ms.
         idle_time = (USB_ControlRequest.wValue >> 8) * 4;
 
-        DEBUG("HID Request: SetIdle - %ums", idle_time);
+        LOG_DEBUG("HID Request: SetIdle - %ums", idle_time);
       }
       break;
 
@@ -177,7 +177,7 @@ void EVENT_USB_Device_ControlRequest(void) {
         Endpoint_ClearIN();
         Endpoint_ClearStatusStage();
 
-        DEBUG("HID Request: GetIdle");
+        LOG_DEBUG("HID Request: GetIdle");
       }
       break;
   }

@@ -59,7 +59,7 @@ void AddKeycode(u8 keycode)
   if (!keycode)
     return;
 
-  DEBUG("+keycode\t\t%.2X", keycode);
+  LOG_DEBUG("+keycode\t\t%.2X", keycode);
 
   KeycodeAction(keycode, true);
 }
@@ -69,7 +69,7 @@ void RemoveKeycode(u8 keycode)
   if (!keycode)
     return;
 
-  DEBUG("-keycode\t\t%.2X", keycode);
+  LOG_DEBUG("-keycode\t\t%.2X", keycode);
 
   KeycodeAction(keycode, false);
 }
