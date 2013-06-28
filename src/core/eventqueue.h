@@ -35,18 +35,17 @@ struct Event {
   u8 column;
 };
 
-inline void WriteEvent(Event *event, EventType type, u8 row, u8 column) {
-  event->type = type;
-  event->row = row;
-  event->column = column;
-}
+// Returns true the queue is full and cannot hold any more events, false
+// otherwise.
+bool EventQueueFull();
 
-// Returns a pointer to Event struct that can be written to or nullptr if queue
-// is full.
+// Returns true if there are no events in the queue, false otherwise.
+bool EventQueueEmpty();
+
+// Returns a pointer to Event struct that can be written to.
 struct Event *EventQueueWrite();
 
-// Returns a poitner to Event struct taht can be read from or nullptr if queue
-// is empty.
+// Returns a poitner to Event struct that can be read from.
 struct Event *EventQueueRead();
 
 #endif  // CKFW_SRC_CORE_EVENTQUEUE_H_

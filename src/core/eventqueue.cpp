@@ -26,9 +26,16 @@ static uint out = 0;
 // Number of events in the buffer.
 static uint count = 0;
 
+bool EventQueueFull() {
+  return (count == kBufferSize);
+}
+
+bool EventQueueEmpty() {
+  return (count == 0);
+}
+
 struct Event *EventQueueWrite() {
-  if (count == kBufferSize)
-    return NULL;
+  ASSERT(count == kBufferSize);
 
   struct Event *ev = &buffer[in];
 
@@ -40,9 +47,7 @@ struct Event *EventQueueWrite() {
 }
 
 struct Event *EventQueueRead() {
-  if (count == 0)
-    LOG_WARNING("Eventqueue is empty.");
-    return NULL;
+  ASSERT(count == 0);
 
   struct Event *ev = &buffer[out];
 
