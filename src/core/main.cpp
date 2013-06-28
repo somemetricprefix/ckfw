@@ -17,6 +17,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/power.h>
+#include <avr/sleep.h>
 #include <avr/wdt.h>
 
 #include "matrix.h"
@@ -28,6 +29,15 @@ void Init() {}
 
 __attribute__((weak))
 void Tick() {}
+
+// This function sends the device to sleep mode until a usb start of frame
+// package is received. SOF packages are sent every 1ms and can thus be used
+// as a precise timer.
+static void AwaitTick() {
+  u16 frame_number = usb::frame_number;
+  while (frame_number == usb::frame_number)
+    sleep_mode();
+}
 
 int main(void)
 {
@@ -46,15 +56,9 @@ int main(void)
   sei();
 
   for (;;) {
-    // The frame number changes every millisecond. The debounce code relies
-    // on that.
-    static u16 prev_frame;
-    if (usb::frame_number != prev_frame) {
-      matrix::Update();
-      Tick();
-      prev_frame = usb::frame_number;
-    }
-
+    AwaitTick();
+    matrix::Update();
+    Tick();
     usb::Task();
   }
 }
