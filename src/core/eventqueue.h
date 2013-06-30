@@ -23,35 +23,43 @@
 // This file defines a event queue implemented with a ring buffer.
 // Events are added by interrupt routines.
 
-enum Event {
+enum {
   // Special event: after the key event is processed the event field has
   // to be set to kFree to tell the pool alocator that is available again.
-  kFree,
+  kEventFree,
 
   // Those events are generated in by matrix.cpp
-  kPressed,
-  kReleased,
+  kEventPressed,
+  kEventReleased,
 
   // This isn't really an event but more a seperator.
   // Every event above this has an low priority, every event below a high
   // priority.
-  kPriority,
+  kEventPriority,
 
-  kTimeout,
+  kEventNumKeysPressed,
+  kEventTimeout,
 };
 
-struct KeyEvent {
-  Event event;
-  u8 row;
-  u8 column;
+struct Event {
+  u8 event;
 
-  STAILQ_ENTRY(KeyEvent) stq_entry;
+  union {
+    u16 num_keys_pressed;
+    struct {
+      u8 row;
+      u8 column;
+    };
+  };
+
+  STAILQ_ENTRY(Event) stq_entry;
 };
 
 // Add an event to the event queue.
-void EventQueueWrite(Event type, u8 row, u8 col);
+void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col);
+void EventQueueWriteNumKeysPressedEvent(uint num_keys_pressed);
 
 // Returns a poitner to Event struct that can be read from.
-KeyEvent *EventQueueRead();
+Event *EventQueueRead();
 
 #endif  // CKFW_SRC_CORE_EVENTQUEUE_H_

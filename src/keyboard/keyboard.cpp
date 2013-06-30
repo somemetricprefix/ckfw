@@ -40,17 +40,17 @@ static TapKey tap_keys[] = {
 void Tick() {
   u8 num_keys_pressed = 0;
 
-  KeyEvent *ev;
+  Event *ev;
 
   while ((ev = EventQueueRead())) {
     u8 keycode = keymap[ev->row][ev->column];
-    if (ev->event == kPressed) {
+    if (ev->event == kEventPressed) {
       report::AddKeycode(keycode);
       num_keys_pressed++;
-    } else if (ev->event == kReleased) {
+    } else if (ev->event == kEventReleased) {
       report::RemoveKeycode(keycode);
     }
-    ev->event = kFree;
+    ev->event = kEventFree;
   }
 
   for (TapKey &tap_key : tap_keys)

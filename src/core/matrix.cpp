@@ -98,12 +98,12 @@ void Update() {
       // Check for change between 6th and 5th bit. If the key was stable for
       // 5 cycles after that set pressed or released bit.
       if (key == 0b011111) {  // 0 -> 1 indicates key press.
-        EventQueueWrite(Event::kPressed, i, j);
+        EventQueueWriteKeyEvent(kEventPressed, i, j);
 
         BIT_SET(key, 7);
         LOG_DEBUG("+key\t\t%u,%u", i, j);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
-        EventQueueWrite(Event::kReleased, i, j);
+        EventQueueWriteKeyEvent(kEventReleased, i, j);
 
         BIT_SET(key, 6);
         LOG_DEBUG("-key\t\t%u,%u", i, j);
