@@ -16,44 +16,43 @@
 
 #include "eventqueue.h"
 
-static const uint kBufferSize = 8;
-static struct KeyEvent buffer[kBufferSize];
+static const uint kEventPoolSize = 8;
+static struct KeyEvent event_pool[kEventPoolSize];
 
-// Indixes to the buffer.
-static uint in = 0;
-static uint out = 0;
+static STAILQ_HEAD(EventQueue, KeyEvent) event_queue =
+  STAILQ_HEAD_INITIALIZER(event_queue);
 
-// Number of events in the buffer.
-static uint count = 0;
+void EventQueueWrite(Event event, u8 row, u8 col) {
+  KeyEvent *key_event = NULL;
 
-bool EventQueueFull() {
-  return (count == kBufferSize);
-}
+  // Search for free event in pool.
+  for (uint i = 0; i < kEventPoolSize; i++) {
+    if (event_pool[i].event == kFree) {
+      key_event = &event_pool[i];
+      break;
+    }
+  }
 
-bool EventQueueEmpty() {
-  return (count == 0);
-}
+  if (!key_event) {
+    LOG_WARNING("Eventpool is full.");
+    return;
+  }
 
-KeyEvent *EventQueueWrite() {
-  ASSERT(count == kBufferSize);
+  // Insert into queue based on priority.
+  if (key_event->event < Event::kPriority)
+    STAILQ_INSERT_TAIL(&event_queue, key_event, stq_entry);
+  else
+    STAILQ_INSERT_HEAD(&event_queue, key_event, stq_entry);
 
-  struct KeyEvent *ev = &buffer[in];
-
-  // Move to next free element.
-  in = (in + 1) % kBufferSize;
-  count++;
-
-  return ev;
+  // Write event data.
+  key_event->event = event;
+  key_event->row = row;
+  key_event->column = col;
 }
 
 KeyEvent *EventQueueRead() {
-  ASSERT(count == 0);
-
-  struct KeyEvent *ev = &buffer[out];
-
-  // Move to next element.
-  out = (out + 1) % kBufferSize;
-  --count;
-
-  return ev;
+  KeyEvent *event = STAILQ_FIRST(&event_queue);
+  if (event)
+    STAILQ_REMOVE_HEAD(&event_queue, stq_entry);
+  return event;
 }
