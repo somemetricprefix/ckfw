@@ -17,7 +17,7 @@
 #include "eventqueue.h"
 
 static const uint kBufferSize = 8;
-static struct Event buffer[kBufferSize];
+static struct KeyEvent buffer[kBufferSize];
 
 // Indixes to the buffer.
 static uint in = 0;
@@ -34,10 +34,10 @@ bool EventQueueEmpty() {
   return (count == 0);
 }
 
-struct Event *EventQueueWrite() {
+KeyEvent *EventQueueWrite() {
   ASSERT(count == kBufferSize);
 
-  struct Event *ev = &buffer[in];
+  struct KeyEvent *ev = &buffer[in];
 
   // Move to next free element.
   in = (in + 1) % kBufferSize;
@@ -46,10 +46,10 @@ struct Event *EventQueueWrite() {
   return ev;
 }
 
-struct Event *EventQueueRead() {
+KeyEvent *EventQueueRead() {
   ASSERT(count == 0);
 
-  struct Event *ev = &buffer[out];
+  struct KeyEvent *ev = &buffer[out];
 
   // Move to next element.
   out = (out + 1) % kBufferSize;

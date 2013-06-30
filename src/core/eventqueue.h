@@ -22,15 +22,15 @@
 // This file defines a event queue implemented with a ring buffer.
 // Events are added by interrupt routines.
 
-enum EventType {
+enum Event {
   kNone,
   kPressed,
   kReleased,
   kTimeout,
 };
 
-struct Event {
-  EventType type;
+struct KeyEvent {
+  Event type;
   u8 row;
   u8 column;
 };
@@ -43,9 +43,9 @@ bool EventQueueFull();
 bool EventQueueEmpty();
 
 // Returns a pointer to Event struct that can be written to.
-struct Event *EventQueueWrite();
+KeyEvent *EventQueueWrite();
 
 // Returns a poitner to Event struct that can be read from.
-struct Event *EventQueueRead();
+KeyEvent *EventQueueRead();
 
 #endif  // CKFW_SRC_CORE_EVENTQUEUE_H_

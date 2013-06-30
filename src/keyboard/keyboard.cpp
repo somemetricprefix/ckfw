@@ -41,7 +41,7 @@ void Tick() {
   u8 num_keys_pressed = 0;
 
   while (!EventQueueEmpty()) {
-    Event *ev = EventQueueRead();
+    KeyEvent *ev = EventQueueRead();
     u8 keycode = keymap[ev->row][ev->column];
     if (ev->type == kPressed) {
       report::AddKeycode(keycode);
