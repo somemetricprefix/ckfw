@@ -46,7 +46,7 @@ struct Event {
   u8 event;
 
   union {
-    u16 num_keys_pressed;
+    u16 num_keys;
     struct {
       u8 row;
       u8 column;

@@ -14,10 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_UTIL_TAPKEY_H
-#define CKFW_SRC_UTIL_TAPKEY_H
+#ifndef CKFW_SRC_UTIL_TAPKEYACTION_H_
+#define CKFW_SRC_UTIL_TAPKEYACTION_H_
 
 #include "core/common.h"
+#include "keyactioninterface.h"
 
 // A short key press is calles "tap". Tap keys send a keycode when they are
 // released shortly after they've been pressed. If the key is held or anther
@@ -26,31 +27,20 @@
 // as the key is held down.
 // Example: TapKey(KC_BSPACE, KC_SHIFT) is key that acts like a normal shift
 // key in most cases. If it is tapped it acts as backspace though.
-class TapKey {
+class TapKeyAction : public KeyActionInterface {
  public:
   // A key press and release within kTapThreshold ms is interpreted as tap.
   // Maximum value is 255 because this is a unsigned 8bit value.
-  static const u8 kTapThreshold = 200;
+  static const uint kTapThreshold = 200;
 
-  inline TapKey(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
+  constexpr TapKeyAction(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
       : row_(row),
         column_(col),
         tap_keycode_(tap_keycode),
         hold_keycode_(hold_keycode),
-        state(0),
-        start_frame(0) {}
+        state_(kStart) {}
 
-  // other_key_pressed should be true when other keys than this one are pressed
-  // to allow short hold times.
-  void Update(bool other_key_pressed);
-
-  inline u8 tap_keycode() const { return tap_keycode_; }
-
-  inline u8 hold_keycode() const { return hold_keycode_; }
-
-  inline u8 row() const { return row_; }
-
-  inline u8 column() const { return column_; }
+  virtual void Execute(Event *event);
 
  private:
   enum TapStates {
@@ -68,10 +58,9 @@ class TapKey {
   const u8 tap_keycode_;
   const u8 hold_keycode_;
 
-  u8 state;
-  u16 start_frame;
+  u8 state_;
 
-  DISALLOW_COPY_AND_ASSIGN(TapKey);
+  DISALLOW_COPY_AND_ASSIGN(TapKeyAction);
 };
 
-#endif  //CKFW_SRC_UTIL_TAPKEY_H
+#endif  //  CKFW_SRC_UTIL_TAPKEYACTION_H_

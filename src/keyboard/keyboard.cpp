@@ -18,7 +18,7 @@
 #include "core/matrix.h"
 #include "core/report.h"
 #include "util/keycodes.h"
-#include "util/tapkey.h"
+#include "util/tapkeyaction.h"
 
 // BuTECK layout
 // B U . , X P C L M F
@@ -31,23 +31,11 @@ static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] =  {
   { 0, 0, 0, KC_SPC, 0, 0, 0, 0, 0, 0 },
 };
 
-static TapKey tap_keys[] = {
+static TapKeyAction actions[] = {
   { 3, 6, KC_BSPACE, KC_RSHIFT },
   { 3, 4, KC_ENTER, KC_LCTRL },
   { 3, 2, KC_TAB, KC_LALT },
 };
-
-static void ExecTapKey(Event *ev) {
-  if (keymap[ev->row][ev->column] != 0)
-    return;
-
-  for (TapKey &tap_key : tap_keys) {
-    if (tap_key.row() == ev->row && tap_key.column() == ev->column) {
-      tap_key.Update(false);
-      break;
-    }
-  }
-}
 
 void Tick() {
   Event *ev;
@@ -56,21 +44,17 @@ void Tick() {
     u8 keycode = keymap[ev->row][ev->column];
 
     switch (ev->event) {
-      case kEventNumKeysPressed:
-        for (TapKey &tap_key : tap_keys)
-          tap_key.Update(ev->num_keys_pressed > 0);
-        break;
-
       case kEventPressed:
-        ExecTapKey(ev);
         report::AddKeycode(keycode);
         break;
 
       case kEventReleased:
-        ExecTapKey(ev);
         report::RemoveKeycode(keycode);
         break;
     }
+
+    for (TapKeyAction &action : actions)
+      action.Execute(ev);
 
     ev->event = kEventFree;
   }

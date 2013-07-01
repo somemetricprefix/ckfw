@@ -101,17 +101,19 @@ void Update() {
       // Check for change between 6th and 5th bit. If the key was stable for
       // 5 cycles after that set pressed or released bit.
       if (key == 0b011111) {  // 0 -> 1 indicates key press.
+        LOG_DEBUG("+key\t\t%u,%u", i, j);
+
         EventQueueWriteKeyEvent(kEventPressed, i, j);
         num_keys_pressed++;
 
         BIT_SET(key, 7);
-        LOG_DEBUG("+key\t\t%u,%u", i, j);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
+        LOG_DEBUG("-key\t\t%u,%u", i, j);
+
         EventQueueWriteKeyEvent(kEventReleased, i, j);
         num_keys_released++;
 
         BIT_SET(key, 6);
-        LOG_DEBUG("-key\t\t%u,%u", i, j);
       }
 
       // Put updated key back in buffer.
@@ -119,9 +121,10 @@ void Update() {
     }
   }
 
-
-  EventQueueWriteNumKeysEvent(kEventNumKeysPressed, num_keys_pressed);
-  EventQueueWriteNumKeysEvent(kEventNumKeysReleased, num_keys_released);
+  if (num_keys_pressed)
+    EventQueueWriteNumKeysEvent(kEventNumKeysPressed, num_keys_pressed);
+  if (num_keys_released)
+    EventQueueWriteNumKeysEvent(kEventNumKeysReleased, num_keys_released);
 }
 
 }  // namespace matrix

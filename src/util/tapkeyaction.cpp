@@ -14,54 +14,65 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "tapkey.h"
+#include "tapkeyaction.h"
 
+#include "core/eventqueue.h"
 #include "core/matrix.h"
 #include "core/report.h"
 #include "core/usb/usb.h"
 
-// Tapping detection is implemented in state machine because the logic is very
+// Tapping detection is implemented in state_ machine because the logic is very
 // tricky to get right without one.
-void TapKey::Update(bool other_key_pressed) {
-  const bool timeout = (usb::frame_number - start_frame) > kTapThreshold;
+void TapKeyAction::Execute(Event *ev) {
+  const bool pressed = (ev->event == kEventPressed);
+  const bool released = (ev->event == kEventReleased);
+  const bool timeout = (ev->event == kEventTimeout);
+  const bool other_key_pressed = (ev->event == kEventNumKeysPressed) &&
+                                 (ev->num_keys > 0);
 
-  switch (state) {
+  if (!((ev->row == row_ && ev->column == column_) || other_key_pressed))
+    return;
+
+  LOG_DEBUG("%u %u %u %u", ev->event, ev->row, ev->column, state_);
+
+  switch (state_) {
     case TapStates::kStart:
-      if (matrix::KeyPressed(row_, column_)) {
-        start_frame = usb::frame_number;
-        state = TapStates::kWaitTapRelease1;
+      if (pressed) {
+        //start_frame = usb::frame_number;
+        state_ = TapStates::kWaitTapRelease1;
       }
       break;
 
     case TapStates::kWaitTapRelease1:
       if (other_key_pressed || timeout) {
         report::AddKeycode(hold_keycode_);
-        state = TapStates::kHold;
-      } else if (matrix::KeyReleased(row_, column_)) {
+        state_ = TapStates::kHold;
+      } else if (released) {
         report::AddKeycode(tap_keycode_);
-        state = TapStates::kTap;
+        // TODO: commit opertation
+        report::RemoveKeycode(tap_keycode_);
+        state_ = TapStates::kTap;
       }
       break;
 
     case TapStates::kTap:
-      report::RemoveKeycode(tap_keycode_);
-      if (matrix::KeyPressed(row_, column_)) {
+      if (pressed) {
         report::AddKeycode(tap_keycode_);
-        start_frame = usb::frame_number;
-        state = kWaitTapRelease2;
+        //start_frame = usb::frame_number;
+        state_ = kWaitTapRelease2;
       } else {
-        start_frame = usb::frame_number;
-        state = kWaitTapPress;
+        //start_frame = usb::frame_number;
+        state_ = kWaitTapPress;
       }
       break;
 
     case TapStates::kWaitTapPress:
       if (timeout) {
-        state = kStart;
-      } else if (matrix::KeyPressed(row_, column_)) {
+        state_ = kStart;
+      } else if (pressed) {
         report::AddKeycode(tap_keycode_);
-        start_frame = usb::frame_number;
-        state = kWaitTapRelease2;
+        //start_frame = usb::frame_number;
+        state_ = kWaitTapRelease2;
       }
       break;
 
@@ -69,25 +80,25 @@ void TapKey::Update(bool other_key_pressed) {
       if (other_key_pressed) {
         report::RemoveKeycode(tap_keycode_);
         report::AddKeycode(hold_keycode_);
-        state = TapStates::kHold;
+        state_ = TapStates::kHold;
       } else if (timeout) {
-        state = TapStates::kTapHold;
-      } else if (matrix::KeyReleased(row_, column_)) {
-        state = TapStates::kTap;
+        state_ = TapStates::kTapHold;
+      } else if (released) {
+        state_ = TapStates::kTap;
       }
       break;
 
     case TapStates::kTapHold:
-      if (matrix::KeyReleased(row_, column_)) {
+      if (released) {
         report::RemoveKeycode(tap_keycode_);
-        state = kStart;
+        state_ = kStart;
       }
       break;
 
     case TapStates::kHold:
-      if (matrix::KeyReleased(row_, column_)) {
+      if (released) {
         report::RemoveKeycode(hold_keycode_);
-        state = kStart;
+        state_ = kStart;
       }
       break;
   }

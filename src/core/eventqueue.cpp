@@ -22,31 +22,31 @@ static struct Event event_pool[kEventPoolSize];
 static STAILQ_HEAD(EventQueue, Event) event_queue =
   STAILQ_HEAD_INITIALIZER(event_queue);
 
-static Event *Enqueue(u8 ev) {
-  Event *event = NULL;
+static Event *Enqueue(u8 event) {
+  Event *ev = NULL;
 
   // Search for free event in pool.
   for (uint i = 0; i < kEventPoolSize; i++) {
     if (event_pool[i].event == kEventFree) {
-      event = &event_pool[i];
+      ev = &event_pool[i];
       break;
     }
   }
 
-  if (!event) {
+  if (!ev) {
     LOG_WARNING("Eventpool is full.");
     return nullptr;
   }
 
   // Insert into queue based on priority.
-  if (ev < kEventPriority)
-    STAILQ_INSERT_TAIL(&event_queue, event, stq_entry);
+  if (event < kEventPriority)
+    STAILQ_INSERT_TAIL(&event_queue, ev, stq_entry);
   else
-    STAILQ_INSERT_HEAD(&event_queue, event, stq_entry);
+    STAILQ_INSERT_HEAD(&event_queue, ev, stq_entry);
 
-  event->event = ev;
+  ev->event = event;
 
-  return event;
+  return ev;
 }
 
 void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col) {
@@ -62,7 +62,7 @@ void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col) {
   ev->column = col;
 }
 
-void EventQueueWriteNumKeysEvent(u8 event, uint num_keys_pressed) {
+void EventQueueWriteNumKeysEvent(u8 event, uint num_keys) {
   ASSERT(event == kEventNumKeysPressed ||
          event == kEventNumKeysReleased);
 
@@ -70,12 +70,13 @@ void EventQueueWriteNumKeysEvent(u8 event, uint num_keys_pressed) {
   if (!ev)
     return;
 
-  ev->num_keys_pressed = num_keys_pressed;
+  ev->num_keys = num_keys;
 }
 
 Event *EventQueueRead() {
-  Event *event = STAILQ_FIRST(&event_queue);
-  if (event)
+  Event *ev = STAILQ_FIRST(&event_queue);
+  if (ev)
     STAILQ_REMOVE_HEAD(&event_queue, stq_entry);
-  return event;
+
+  return ev;
 }
