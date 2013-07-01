@@ -32,11 +32,7 @@ struct OutputPort {
 static const OutputPort row_ports[kNumRows] = { MATRIX_ROW_PORTS(AS_DATA) };
 
 // Each key is represented as an 8-bit value.
-// Bit 76543210
-//     prssssss
-// p - Key was pressed.
-// r - Key was released.
-// s - Last 6 key states.
+// It is a bitmask of the last states of that key.
 u8 key_matrix[kNumRows][kNumColumns];
 
 // Pull up on IO port is enabled by setting DDRx = 0 and PORTx = 1.
@@ -105,19 +101,12 @@ void Update() {
 
         EventQueueWriteKeyEvent(kEventPressed, i, j);
         num_keys_pressed++;
-
-        BIT_SET(key, 7);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
         LOG_DEBUG("-key\t\t%u,%u", i, j);
 
         EventQueueWriteKeyEvent(kEventReleased, i, j);
         num_keys_released++;
-
-        BIT_SET(key, 6);
       }
-
-      // Put updated key back in buffer.
-      key_matrix[i][j] = key;
     }
   }
 

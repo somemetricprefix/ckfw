@@ -22,27 +22,14 @@
 
 namespace matrix {
 
+// Macro magic to determine how many row and port pins are in the config file.
 #define ID(port, bit) kPort##port##bit
 #define AS_STRUCT(port, bit) u8 ID(port, bit);
 struct __NumRows { MATRIX_ROW_PORTS(AS_STRUCT) };
 struct __NumColumns { MATRIX_COLUMN_PORTS(AS_STRUCT) };
 
-const u8 kNumRows = sizeof(__NumRows);
-const u8 kNumColumns = sizeof(__NumColumns);
-
-extern u8 key_matrix[kNumRows][kNumColumns];
-
-// Returns true if a key changed from up posistin to down position, false
-// otherwise.
-inline bool KeyPressed(u8 row, u8 col) {
-  return BIT_IS_SET(key_matrix[row][col], 7);
-}
-
-// Returns true if a key changed from up posistin to down position, false
-// otherwise.
-inline bool KeyReleased(u8 row, u8 col) {
-  return BIT_IS_SET(key_matrix[row][col], 6);
-}
+const uint kNumRows = sizeof(__NumRows);
+const uint kNumColumns = sizeof(__NumColumns);
 
 // Initializes the I/O ports of the keys.
 void Init();
