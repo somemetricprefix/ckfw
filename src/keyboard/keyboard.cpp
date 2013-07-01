@@ -56,6 +56,6 @@ void Tick() {
     for (TapKeyAction &action : actions)
       action.Execute(ev);
 
-    ev->event = kEventFree;
+    ev->Free();
   }
 }

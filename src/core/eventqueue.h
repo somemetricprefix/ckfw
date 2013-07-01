@@ -17,17 +17,15 @@
 #ifndef CKFW_SRC_CORE_EVENTQUEUE_H_
 #define CKFW_SRC_CORE_EVENTQUEUE_H_
 
+#include "poolallocator.h"
 #include "common.h"
 #include "queue.h"
 
 // This file defines a event queue implemented with a ring buffer.
 // Events are added by interrupt routines.
+// TODO: the whole event system lacks proper abstraction
 
 enum {
-  // Special event: after the key event is processed the event field has
-  // to be set to kFree to tell the pool alocator that is available again.
-  kEventFree,
-
   // Those events are generated in by matrix.cpp
   kEventPressed,
   kEventReleased,
@@ -52,6 +50,11 @@ struct Event {
       u8 column;
     };
   };
+
+  inline void Free() { events.Free(this); }
+
+  static const uint kEventPoolSize = 8;
+  static PoolAllocator<Event, kEventPoolSize> events;
 
   STAILQ_ENTRY(Event) stq_entry;
 };

@@ -16,23 +16,15 @@
 
 #include "eventqueue.h"
 
-static const uint kEventPoolSize = 8;
-static struct Event event_pool[kEventPoolSize];
+#include "poolallocator.h"
+
+PoolAllocator<Event, Event::kEventPoolSize> Event::events;
 
 static STAILQ_HEAD(EventQueue, Event) event_queue =
   STAILQ_HEAD_INITIALIZER(event_queue);
 
 static Event *Enqueue(u8 event) {
-  Event *ev = NULL;
-
-  // Search for free event in pool.
-  for (uint i = 0; i < kEventPoolSize; i++) {
-    if (event_pool[i].event == kEventFree) {
-      ev = &event_pool[i];
-      break;
-    }
-  }
-
+  Event *ev = Event::events.Allocate();
   if (!ev) {
     LOG_WARNING("Eventpool is full.");
     return nullptr;
