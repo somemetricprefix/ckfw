@@ -37,22 +37,41 @@ static TapKey tap_keys[] = {
   { 3, 2, KC_TAB, KC_LALT },
 };
 
-void Tick() {
-  u8 num_keys_pressed = 0;
+static void ExecTapKey(Event *ev) {
+  if (keymap[ev->row][ev->column] != 0)
+    return;
 
+  for (TapKey &tap_key : tap_keys) {
+    if (tap_key.row() == ev->row && tap_key.column() == ev->column) {
+      tap_key.Update(false);
+      break;
+    }
+  }
+}
+
+void Tick() {
   Event *ev;
 
   while ((ev = EventQueueRead())) {
     u8 keycode = keymap[ev->row][ev->column];
-    if (ev->event == kEventPressed) {
-      report::AddKeycode(keycode);
-      num_keys_pressed++;
-    } else if (ev->event == kEventReleased) {
-      report::RemoveKeycode(keycode);
+
+    switch (ev->event) {
+      case kEventNumKeysPressed:
+        for (TapKey &tap_key : tap_keys)
+          tap_key.Update(ev->num_keys_pressed > 0);
+        break;
+
+      case kEventPressed:
+        ExecTapKey(ev);
+        report::AddKeycode(keycode);
+        break;
+
+      case kEventReleased:
+        ExecTapKey(ev);
+        report::RemoveKeycode(keycode);
+        break;
     }
+
     ev->event = kEventFree;
   }
-
-  for (TapKey &tap_key : tap_keys)
-    tap_key.Update(num_keys_pressed);
 }

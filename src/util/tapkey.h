@@ -48,6 +48,10 @@ class TapKey {
 
   inline u8 hold_keycode() const { return hold_keycode_; }
 
+  inline u8 row() const { return row_; }
+
+  inline u8 column() const { return column_; }
+
  private:
   enum TapStates {
     kStart,
