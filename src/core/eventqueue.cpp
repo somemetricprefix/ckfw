@@ -62,8 +62,11 @@ void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col) {
   ev->column = col;
 }
 
-void EventQueueWriteNumKeysPressedEvent(uint num_keys_pressed) {
-  Event *ev = Enqueue(kEventNumKeysPressed);
+void EventQueueWriteNumKeysEvent(u8 event, uint num_keys_pressed) {
+  ASSERT(event == kEventNumKeysPressed ||
+         event == kEventNumKeysReleased);
+
+  Event *ev = Enqueue(event);
   if (!ev)
     return;
 

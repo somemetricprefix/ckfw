@@ -87,6 +87,9 @@ void Update() {
     DeselectRow(row);
   }
 
+  u16 num_keys_pressed = 0;
+  u16 num_keys_released = 0;
+
   // Second pass: debounce
   // The method used here was mentioned by Soarer in a thread on geekhack:
   // http://geekhack.org/index.php?topic=42385.msg861321#msg861321
@@ -99,11 +102,13 @@ void Update() {
       // 5 cycles after that set pressed or released bit.
       if (key == 0b011111) {  // 0 -> 1 indicates key press.
         EventQueueWriteKeyEvent(kEventPressed, i, j);
+        num_keys_pressed++;
 
         BIT_SET(key, 7);
         LOG_DEBUG("+key\t\t%u,%u", i, j);
       } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
         EventQueueWriteKeyEvent(kEventReleased, i, j);
+        num_keys_released++;
 
         BIT_SET(key, 6);
         LOG_DEBUG("-key\t\t%u,%u", i, j);
@@ -113,6 +118,10 @@ void Update() {
       key_matrix[i][j] = key;
     }
   }
+
+
+  EventQueueWriteNumKeysEvent(kEventNumKeysPressed, num_keys_pressed);
+  EventQueueWriteNumKeysEvent(kEventNumKeysReleased, num_keys_released);
 }
 
 }  // namespace matrix

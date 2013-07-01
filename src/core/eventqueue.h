@@ -38,6 +38,7 @@ enum {
   kEventPriority,
 
   kEventNumKeysPressed,
+  kEventNumKeysReleased,
   kEventTimeout,
 };
 
@@ -57,7 +58,7 @@ struct Event {
 
 // Add an event to the event queue.
 void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col);
-void EventQueueWriteNumKeysPressedEvent(uint num_keys_pressed);
+void EventQueueWriteNumKeysEvent(u8 event, uint num_keys_pressed);
 
 // Returns a poitner to Event struct that can be read from.
 Event *EventQueueRead();
