@@ -17,6 +17,7 @@
 #include "usb.h"
 
 #include "../common.h"
+#include "../timer.h"
 #include "descriptors.h"
 
 // Console can be used with stdio functions.
@@ -187,6 +188,7 @@ void EVENT_USB_Device_StartOfFrame(void) {
   if (idle_time_remaining)
     --idle_time_remaining;
   frame_number = USB_Device_GetFrameNumber();
+  Timer::Update();
 }
 
 }  // namespace usb

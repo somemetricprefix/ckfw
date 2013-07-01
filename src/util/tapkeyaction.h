@@ -18,6 +18,7 @@
 #define CKFW_SRC_UTIL_TAPKEYACTION_H_
 
 #include "core/common.h"
+#include "core/timer.h"
 #include "keyactioninterface.h"
 
 // A short key press is calles "tap". Tap keys send a keycode when they are
@@ -38,6 +39,7 @@ class TapKeyAction : public KeyActionInterface {
         column_(col),
         tap_keycode_(tap_keycode),
         hold_keycode_(hold_keycode),
+        timer_(kTapThreshold, row, col),
         state_(kStart) {}
 
   virtual void Execute(Event *event);
@@ -58,6 +60,7 @@ class TapKeyAction : public KeyActionInterface {
   const u8 tap_keycode_;
   const u8 hold_keycode_;
 
+  Timer timer_;
   u8 state_;
 
   DISALLOW_COPY_AND_ASSIGN(TapKeyAction);

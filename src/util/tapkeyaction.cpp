@@ -33,12 +33,10 @@ void TapKeyAction::Execute(Event *ev) {
   if (!((ev->row == row_ && ev->column == column_) || other_key_pressed))
     return;
 
-  LOG_DEBUG("%u %u %u %u", ev->event, ev->row, ev->column, state_);
-
   switch (state_) {
     case TapStates::kStart:
       if (pressed) {
-        //start_frame = usb::frame_number;
+        timer_.Start();
         state_ = TapStates::kWaitTapRelease1;
       }
       break;
@@ -58,10 +56,10 @@ void TapKeyAction::Execute(Event *ev) {
     case TapStates::kTap:
       if (pressed) {
         report::AddKeycode(tap_keycode_);
-        //start_frame = usb::frame_number;
+        timer_.Start();
         state_ = kWaitTapRelease2;
       } else {
-        //start_frame = usb::frame_number;
+        timer_.Start();
         state_ = kWaitTapPress;
       }
       break;
@@ -71,7 +69,7 @@ void TapKeyAction::Execute(Event *ev) {
         state_ = kStart;
       } else if (pressed) {
         report::AddKeycode(tap_keycode_);
-        //start_frame = usb::frame_number;
+        timer_.Start();
         state_ = kWaitTapRelease2;
       }
       break;
