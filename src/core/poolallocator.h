@@ -41,7 +41,7 @@ class PoolAllocator {
   inline void Free(T *ptr) {
     ASSERT(ptr >= &pool_[0] && ptr < &pool_[size]);
 
-    uint bit = (ptr - &pool_[0]) / sizeof(T);
+    uint bit = (ptr - &pool_[0]);
     BIT_CLR(flags_, bit);
   }
 
