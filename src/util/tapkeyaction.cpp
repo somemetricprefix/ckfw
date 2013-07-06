@@ -80,6 +80,7 @@ void TapKeyAction::Execute(Event *ev) {
       } else if (timeout) {
         state_ = TapStates::kTapHold;
       } else if (released) {
+        report.RemoveKeycode(tap_keycode_);
         state_ = TapStates::kTap;
       }
       break;
