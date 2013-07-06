@@ -16,6 +16,8 @@
 
 #include "eventqueue.h"
 
+#include <avr/interrupt.h>
+
 #include "poolallocator.h"
 
 PoolAllocator<Event, Event::kEventPoolSize> Event::events;
@@ -66,9 +68,14 @@ void EventQueueWriteNumKeysEvent(u8 event, uint num_keys) {
 }
 
 Event *EventQueueRead() {
+  // Disable interrupts so no new event is added when it is read.
+  cli();
+
   Event *ev = STAILQ_FIRST(&event_queue);
   if (ev)
     STAILQ_REMOVE_HEAD(&event_queue, stq_entry);
+
+  sei();
 
   return ev;
 }

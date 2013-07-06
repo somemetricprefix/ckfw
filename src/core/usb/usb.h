@@ -26,9 +26,6 @@
 
 namespace usb {
 
-// Used as "systick"
-extern volatile u16 frame_number;
-
 // Initializes all internal usb resources.
 void Init();
 

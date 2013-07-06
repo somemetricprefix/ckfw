@@ -30,15 +30,6 @@ void Init() {}
 __attribute__((weak))
 void Tick() {}
 
-// This function sends the device to sleep mode until a usb start of frame
-// package is received. SOF packages are sent every 1ms and can thus be used
-// as a precise timer.
-static void AwaitTick() {
-  u16 frame_number = usb::frame_number;
-  while (frame_number == usb::frame_number)
-    sleep_mode();
-}
-
 int main(void)
 {
   // Disable watchdog if enabled by bootloader/fuses
@@ -56,9 +47,8 @@ int main(void)
   sei();
 
   for (;;) {
-    AwaitTick();
-    matrix::Update();
     Tick();
     usb::Task();
+    sleep_mode();
   }
 }
