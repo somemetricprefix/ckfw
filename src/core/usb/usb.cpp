@@ -59,14 +59,14 @@ static void WriteKeyboardEndpoint() {
     return;
 
   // Store last sent report statically to get to know if data has changed.
-  static u8 prev_data[report::kDataSize];
-  void *curr_data = report::data;
+  static u8 prev_data[Report::kDataSize];
+  void *curr_data = report.data();
   bool send_data = false;
 
   // Send report to host if either report has changed...
-  if (memcmp(prev_data, curr_data, report::kDataSize)) {
+  if (memcmp(prev_data, curr_data, Report::kDataSize)) {
     // Get new report.
-    memcpy(prev_data, curr_data, report::kDataSize);
+    memcpy(prev_data, curr_data, Report::kDataSize);
     send_data = true;
   // ... or idle time is over.
   } else if (idle_time_remaining == 0) {
@@ -75,7 +75,7 @@ static void WriteKeyboardEndpoint() {
   }
 
   if (send_data) {
-    Endpoint_Write_Stream_LE(curr_data, report::kDataSize, NULL);
+    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
     idle_time_remaining = idle_time;
   }
 
@@ -137,7 +137,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write the report data to the control endpoint
         // The functions waits for the host to enter the status stage
-        Endpoint_Write_Control_Stream_LE(report::data, report::kDataSize);
+        Endpoint_Write_Control_Stream_LE(report.data(), Report::kDataSize);
 
         // Manually clear the status stage
         Endpoint_ClearOUT();

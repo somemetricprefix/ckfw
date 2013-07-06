@@ -16,27 +16,11 @@
 
 #include "report.h"
 
-// The report format is defined at HID descriptor level. This implemtation
-// asserts report data to be a bitmap of 16 bytes. The first byte contains the
-// modifier bitmal. The bits of the remaining 15 bytes are mapped to a keycode.
-//
-// Example:
-// The keycode value of 0x04/'A' is equal to the 4th bit in the second byte of
-// the report. Keycode 0x09/'F' would be the first bit of the 3rd byte.
-//
-// Byte    1    |   2    |   3    |  4-16
-// Bits 00000000|0000a000|00000000|000..000
-//      \______/ \________________________/
-//         |                |
-//      Modifiers          Keys
-
-namespace report {
-
-u8 data[report::kDataSize] = { 0 };
+Report report;
 
 static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
 
-static void KeycodeAction(u8 keycode, bool add) {
+void Report::KeycodeAction(u8 keycode, bool add) {
   u8 data_index;
 
   if (IsModifier(keycode)) {
@@ -49,29 +33,7 @@ static void KeycodeAction(u8 keycode, bool add) {
   u8 nth_bit = (keycode % 8);
 
   if (add)
-    BIT_SET(data[data_index], nth_bit);
+    BIT_SET(data_[data_index], nth_bit);
   else
-    BIT_CLR(data[data_index], nth_bit);
+    BIT_CLR(data_[data_index], nth_bit);
 }
-
-void AddKeycode(u8 keycode)
-{
-  if (!keycode)
-    return;
-
-  LOG_DEBUG("+keycode\t\t%.2X", keycode);
-
-  KeycodeAction(keycode, true);
-}
-
-void RemoveKeycode(u8 keycode)
-{
-  if (!keycode)
-    return;
-
-  LOG_DEBUG("-keycode\t\t%.2X", keycode);
-
-  KeycodeAction(keycode, false);
-}
-
-}  // namespace report

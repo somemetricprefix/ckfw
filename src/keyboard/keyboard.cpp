@@ -47,11 +47,11 @@ void Tick() {
 
     switch (ev.event) {
       case kEventPressed:
-        report::AddKeycode(keycode);
+        report.AddKeycode(keycode);
         break;
 
       case kEventReleased:
-        report::RemoveKeycode(keycode);
+        report.RemoveKeycode(keycode);
         break;
     }
   }
