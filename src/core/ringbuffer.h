@@ -50,7 +50,7 @@ class RingBuffer {
     return buffer_[old_out];
   }
 
-  inline bool Empty() {
+  inline bool Empty() const {
     return (count_ == 0);
   }
 

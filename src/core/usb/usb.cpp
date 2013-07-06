@@ -18,6 +18,7 @@
 
 #include "../common.h"
 #include "../matrix.h"
+#include "../ringbuffer.h"
 #include "../timer.h"
 #include "descriptors.h"
 
@@ -35,28 +36,21 @@ namespace usb {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-static const u8 kConsoleSendBufferSize = 128;
-static RingBuffer_t console_send_rb;
+static const uint kConsoleSendBufferSize = 256;
 static u8 console_send_rb_data[kConsoleSendBufferSize];
+static RingBuffer<u8> console_send_rb(console_send_rb_data,
+                                      kConsoleSendBufferSize);
 
 // Writes single byte to console endpoint.
 static int ConsoleWrite(char byte, FILE *unused) {
-  if (RingBuffer_IsFull(&console_send_rb))
-    return 1;
-
-  RingBuffer_Insert(&console_send_rb, byte);
-
-  return 0;
+  return !console_send_rb.Write(byte);
 }
 
 void Init() {
-  RingBuffer_InitBuffer(&console_send_rb, console_send_rb_data,
-      sizeof(console_send_rb_data));
   // Setup a FILE to use stdio functions for the console.
   fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
   USB_Init();
 }
-
 
 // Gets current report data and writes it to the keyboard endpoint.
 static void WriteKeyboardEndpoint() {
@@ -98,9 +92,9 @@ static void WriteConsoleEndpoint() {
 
   // Fill the bank with...
   while(Endpoint_IsReadWriteAllowed()) {
-    if (!RingBuffer_IsEmpty(&console_send_rb)) {
+    if (!console_send_rb.Empty()) {
       // ...either the current buffered bytes or with...
-      Endpoint_Write_8(RingBuffer_Remove(&console_send_rb));
+      Endpoint_Write_8(console_send_rb.Read());
     } else {
       // ...zeros keep the connection to hid_listen program alive.
       Endpoint_Write_8(0);

@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 
-#include <LUFA/Drivers/Misc/RingBuffer.h>
 #include <LUFA/Drivers/USB/USB.h>
 
 #include "../report.h"
