@@ -18,6 +18,7 @@
 
 #include "../common.h"
 #include "../matrix.h"
+#include "../report.h"
 #include "../ringbuffer.h"
 #include "../timer.h"
 #include "descriptors.h"
@@ -41,6 +42,12 @@ static u8 console_send_rb_data[kConsoleSendBufferSize];
 static RingBuffer<u8> console_send_rb(console_send_rb_data,
                                       kConsoleSendBufferSize);
 
+static const uint kReportBufferSize = 8;
+static ReportData report_rb_data[kReportBufferSize];
+static RingBuffer<ReportData> report_rb(report_rb_data, kReportBufferSize);
+
+static ReportData report_data;
+
 // Writes single byte to console endpoint.
 static int ConsoleWrite(char byte, FILE *unused) {
   return !console_send_rb.Write(byte);
@@ -58,24 +65,26 @@ static void WriteKeyboardEndpoint() {
   if (!Endpoint_IsINReady())
     return;
 
-  // Store last sent report statically to get to know if data has changed.
-  static u8 prev_data[Report::kDataSize];
-  void *curr_data = report.data();
   bool send_data = false;
 
-  // Send report to host if either report has changed...
-  if (memcmp(prev_data, curr_data, Report::kDataSize)) {
-    // Get new report.
-    memcpy(prev_data, curr_data, Report::kDataSize);
-    send_data = true;
-  // ... or idle time is over.
-  } else if (idle_time_remaining == 0) {
+  if (!report_rb.Empty()) {
+    ReportData curr_data = report_rb.Read();
+
+    // Send report if it has changed.
+    if (memcmp(report_data.data, curr_data.data, ReportData::kDataSize)) {
+      // Copy new report to report buffer.
+      report_data = curr_data;
+      send_data = true;
+    }
+  }
+
+  if (idle_time_remaining == 0) {
     // Just send the same report again.
     send_data = true;
   }
 
   if (send_data) {
-    Endpoint_Write_Stream_LE(curr_data, Report::kDataSize, NULL);
+    Endpoint_Write_Stream_LE(report_data.data, ReportData::kDataSize, NULL);
     idle_time_remaining = idle_time;
   }
 
@@ -112,6 +121,10 @@ void Task() {
   WriteConsoleEndpoint();
 }
 
+void SendReport(const ReportData &report_data) {
+  report_rb.Write(report_data);
+}
+
 // Registers all endpoints and enables SOF interrupt.
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
@@ -137,7 +150,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write the report data to the control endpoint
         // The functions waits for the host to enter the status stage
-        Endpoint_Write_Control_Stream_LE(report.data(), Report::kDataSize);
+        Endpoint_Write_Control_Stream_LE(report_data.data, ReportData::kDataSize);
 
         // Manually clear the status stage
         Endpoint_ClearOUT();

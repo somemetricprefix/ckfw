@@ -55,4 +55,5 @@ void Tick() {
         break;
     }
   }
+  report.Commit();
 }

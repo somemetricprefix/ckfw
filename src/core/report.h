@@ -18,15 +18,32 @@
 #define CKFW_SRC_CORE_REPORT_H_
 
 #include "common.h"
+#include "usb/usb.h"
+
+  // The report format is defined at HID descriptor level. This implemtation
+  // asserts report data to be a bitmap of 16 bytes. The first byte contains the
+  // modifier bitmal. The bits of the remaining 15 bytes are mapped to a keycode.
+  //
+  // Example:
+  // The keycode value of 0x04/'A' is equal to the 4th bit in the second byte of
+  // the report. Keycode 0x09/'F' would be the first bit of the 3rd byte.
+  //
+  // Byte    1    |   2    |   3    |  4-16
+  // Bits 00000000|0000a000|00000000|000..000
+  //      \______/ \________________________/
+  //         |                |
+  //      Modifiers          Keys
+struct ReportData {
+  static const u8 kDataSize = 16;
+  u8 data[kDataSize];
+};
 
 // The HID report is an encoded set of keycodes that is transferred over usb.
 // This class represents a report and has methods to translate keycodes to the
 // format that is specified by the HID report descriptor.
 class Report {
  public:
-  static const u8 kDataSize = 16;
-
-  constexpr Report() : data_{0} {}
+  constexpr Report() : data_({{0}}) {}
 
   // Adds an keycode to report.
   inline void AddKeycode(u8 keycode) {
@@ -49,28 +66,13 @@ class Report {
   }
 
   // Pass the record data to the usb code for sending.
-  void Commit();
-
-  u8 *data() { return data_; }
+  inline void Commit() { usb::SendReport(data_); }
 
  private:
   // Adds or removes a keycode from report.
   void KeycodeAction(u8 keycode, bool add);
 
-  // The report format is defined at HID descriptor level. This implemtation
-  // asserts report data to be a bitmap of 16 bytes. The first byte contains the
-  // modifier bitmal. The bits of the remaining 15 bytes are mapped to a keycode.
-  //
-  // Example:
-  // The keycode value of 0x04/'A' is equal to the 4th bit in the second byte of
-  // the report. Keycode 0x09/'F' would be the first bit of the 3rd byte.
-  //
-  // Byte    1    |   2    |   3    |  4-16
-  // Bits 00000000|0000a000|00000000|000..000
-  //      \______/ \________________________/
-  //         |                |
-  //      Modifiers          Keys
-  u8 data_[kDataSize];
+  ReportData data_;
 
   DISALLOW_COPY_AND_ASSIGN(Report);
 };

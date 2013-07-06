@@ -21,7 +21,7 @@
 
 #include <LUFA/Drivers/USB/USB.h>
 
-#include "../report.h"
+struct ReportData;
 
 namespace usb {
 
@@ -30,6 +30,9 @@ void Init();
 
 // Reads and writes endpoint data.
 void Task();
+
+// Adds a report to the internal report send queue.
+void SendReport(const ReportData &report_data);
 
 extern "C" {
   void EVENT_USB_Device_ConfigurationChanged(void);

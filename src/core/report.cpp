@@ -33,7 +33,7 @@ void Report::KeycodeAction(u8 keycode, bool add) {
   u8 nth_bit = (keycode % 8);
 
   if (add)
-    BIT_SET(data_[data_index], nth_bit);
+    BIT_SET(data_.data[data_index], nth_bit);
   else
-    BIT_CLR(data_[data_index], nth_bit);
+    BIT_CLR(data_.data[data_index], nth_bit);
 }

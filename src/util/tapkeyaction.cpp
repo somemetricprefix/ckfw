@@ -45,7 +45,7 @@ void TapKeyAction::Execute(Event *ev) {
         state_ = TapStates::kHold;
       } else if (released) {
         report.AddKeycode(tap_keycode_);
-        // TODO: commit opertation
+        report.Commit();
         report.RemoveKeycode(tap_keycode_);
         state_ = TapStates::kTap;
       }
