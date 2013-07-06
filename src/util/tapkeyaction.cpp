@@ -24,14 +24,12 @@
 // Tapping detection is implemented in state_ machine because the logic is very
 // tricky to get right without one.
 void TapKeyAction::Execute(Event *ev) {
-  const bool pressed = (ev->event == kEventPressed);
-  const bool released = (ev->event == kEventReleased);
-  const bool timeout = (ev->event == kEventTimeout);
-  const bool other_key_pressed = (ev->event == kEventNumKeysPressed) &&
-                                 (ev->num_keys > 0);
+  const bool this_key = (ev->row == row_ && ev->column == column_);
 
-  if (!((ev->row == row_ && ev->column == column_) || other_key_pressed))
-    return;
+  const bool pressed           = this_key && (ev->event == kEventPressed);
+  const bool released          = this_key && (ev->event == kEventReleased);
+  const bool timeout           = this_key && (ev->event == kEventTimeout);
+  const bool other_key_pressed = !this_key && (ev->event == kEventPressed);
 
   switch (state_) {
     case TapStates::kStart:

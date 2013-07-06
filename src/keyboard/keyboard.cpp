@@ -41,6 +41,9 @@ void Tick() {
   Event *ev;
 
   while ((ev = EventQueueRead())) {
+    for (TapKeyAction &action : actions)
+      action.Execute(ev);
+
     u8 keycode = keymap[ev->row][ev->column];
 
     switch (ev->event) {
@@ -52,9 +55,6 @@ void Tick() {
         report::RemoveKeycode(keycode);
         break;
     }
-
-    for (TapKeyAction &action : actions)
-      action.Execute(ev);
 
     ev->Free();
   }

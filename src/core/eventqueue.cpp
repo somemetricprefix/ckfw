@@ -32,11 +32,7 @@ static Event *Enqueue(u8 event) {
     return nullptr;
   }
 
-  // Insert into queue based on priority.
-  if (event < kEventPriority)
-    STAILQ_INSERT_TAIL(&event_queue, ev, stq_entry);
-  else
-    STAILQ_INSERT_HEAD(&event_queue, ev, stq_entry);
+  STAILQ_INSERT_TAIL(&event_queue, ev, stq_entry);
 
   ev->event = event;
 
@@ -54,17 +50,6 @@ void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col) {
 
   ev->row = row;
   ev->column = col;
-}
-
-void EventQueueWriteNumKeysEvent(u8 event, uint num_keys) {
-  ASSERT(event == kEventNumKeysPressed ||
-         event == kEventNumKeysReleased);
-
-  Event *ev = Enqueue(event);
-  if (!ev)
-    return;
-
-  ev->num_keys = num_keys;
 }
 
 Event *EventQueueRead() {
