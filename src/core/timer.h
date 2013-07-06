@@ -26,8 +26,8 @@ class Timer {
  public:
   constexpr Timer(u16 ticks, u8 row, u8 column)
       : ticks_(ticks),
-      	row_(row),
-      	column_(column),
+        row_(row),
+        column_(column),
         remaining_ticks_(0),
         sl_entry_() {}
 

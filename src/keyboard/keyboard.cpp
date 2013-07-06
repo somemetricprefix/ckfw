@@ -38,15 +38,14 @@ static TapKeyAction actions[] = {
 };
 
 void Tick() {
-  Event *ev;
-
-  while ((ev = EventQueueRead())) {
+  while (!EventQueueEmpty()) {
+    Event ev = EventQueueRead();
     for (TapKeyAction &action : actions)
-      action.Execute(ev);
+      action.Execute(&ev);
 
-    u8 keycode = keymap[ev->row][ev->column];
+    u8 keycode = keymap[ev.row][ev.column];
 
-    switch (ev->event) {
+    switch (ev.event) {
       case kEventPressed:
         report::AddKeycode(keycode);
         break;
@@ -55,7 +54,5 @@ void Tick() {
         report::RemoveKeycode(keycode);
         break;
     }
-
-    ev->Free();
   }
 }

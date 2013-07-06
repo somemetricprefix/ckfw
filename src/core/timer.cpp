@@ -23,7 +23,7 @@ void Timer::Update() {
   Timer *iter, *save;
   SLIST_FOREACH_SAFE(iter, &timer_list_, sl_entry_, save) {
     if (--iter->remaining_ticks_ == 0) {
-      EventQueueWriteKeyEvent(kEventTimeout, iter->row_, iter->column_);
+      EventQueueWrite(kEventTimeout, iter->row_, iter->column_);
       SLIST_REMOVE(&timer_list_, iter, Timer, sl_entry_);
     }
   }

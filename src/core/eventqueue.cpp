@@ -16,51 +16,26 @@
 
 #include "eventqueue.h"
 
-#include <avr/interrupt.h>
+#include "ringbuffer.h"
 
-#include "poolallocator.h"
+static const uint kEventQueueSize = 8;
+static Event event_buffer[kEventQueueSize];
+static RingBuffer<Event> event_ring_buffer(event_buffer, kEventQueueSize);
 
-PoolAllocator<Event, Event::kEventPoolSize> Event::events;
-
-static STAILQ_HEAD(EventQueue, Event) event_queue =
-  STAILQ_HEAD_INITIALIZER(event_queue);
-
-static Event *Enqueue(u8 event) {
-  Event *ev = Event::events.Allocate();
-  if (!ev) {
-    LOG_WARNING("Eventpool is full.");
-    return nullptr;
-  }
-
-  STAILQ_INSERT_TAIL(&event_queue, ev, stq_entry);
-
-  ev->event = event;
-
-  return ev;
-}
-
-void EventQueueWriteKeyEvent(u8 event, u8 row, u8 col) {
+void EventQueueWrite(u8 event, u8 row, u8 col) {
   ASSERT(event == kEventPressed ||
          event == kEventReleased ||
          event == kEventTimeout);
 
-  Event *ev = Enqueue(event);
-  if (!ev)
-    return;
-
-  ev->row = row;
-  ev->column = col;
+  bool ok = event_ring_buffer.Write({event, row, col});
+  if (!ok)
+    LOG_WARNING("Eventqueue is full.");
 }
 
-Event *EventQueueRead() {
-  // Disable interrupts so no new event is added when it is read.
-  cli();
+Event EventQueueRead() {
+  return event_ring_buffer.Read();
+}
 
-  Event *ev = STAILQ_FIRST(&event_queue);
-  if (ev)
-    STAILQ_REMOVE_HEAD(&event_queue, stq_entry);
-
-  sei();
-
-  return ev;
+bool EventQueueEmpty() {
+  return event_ring_buffer.Empty();
 }
