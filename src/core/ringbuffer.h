@@ -17,6 +17,8 @@
 #ifndef CKFW_SRC_CORE_RINGBUFFER_H_
 #define CKFW_SRC_CORE_RINGBUFFER_H_
 
+#include <util/atomic.h>
+
 template <typename T>
 class RingBuffer {
  public:
@@ -33,9 +35,11 @@ class RingBuffer {
     if (count_ == size_)
       return false;
 
-    // Copy element to buffer and update indecies and count.
     buffer_[in_] = elem;
-    in_ = (in_ + 1) % size_;
+
+    if (++in_ == size_)
+      in_ = 0;
+
     count_++;
 
     return true;
@@ -45,13 +49,25 @@ class RingBuffer {
     ASSERT(!Empty());
 
     uint old_out = out_;
-    out_ = (out_ + 1) % size_;
-    --count_;
+
+    if (++out_ == size_)
+      out_ = 0;
+
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+      --count_;
+    }
+
     return buffer_[old_out];
   }
 
   inline bool Empty() const {
-    return (count_ == 0);
+    uint count;
+
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+      count = count_;
+    }
+
+    return (count == 0);
   }
 
  private:
