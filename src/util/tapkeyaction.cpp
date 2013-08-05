@@ -16,7 +16,6 @@
 
 #include "tapkeyaction.h"
 
-#include "core/eventqueue.h"
 #include "core/matrix.h"
 #include "core/report.h"
 #include "core/usb/usb.h"

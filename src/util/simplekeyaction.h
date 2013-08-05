@@ -14,14 +14,30 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CKFW_SRC_UTIL_KEYINTERFACE_H
-#define CKFW_SRC_UTIL_KEYINTERFACE_H
+#ifndef CKFW_SRC_UTIL_SIMPLEKEYACTION_H
+#define CKFW_SRC_UTIL_SIMPLEKEYACTION_H
 
-struct Event;
+#include "inputactioninterface.h"
+#include "outputactioninterface.h"
 
-class KeyActionInterface {
+class SimpleKeyAction :
+  public InputActionInterface,
+  public OutputActionInterface {
  public:
-  virtual void Execute(Event *ev) = 0;
+  constexpr SimpleKeyAction(u8 keycode) : keycode_(keycode) {}
+
+  virtual inline void Pressed() { StartOutputAction(); }
+
+  virtual inline void Released() { StopOutputAction(); }
+
+  virtual inline void StartOutputAction() { report.AddKeycode(keycode_); }
+
+  virtual inline void StopOutputAction() { report.RemoveKeycode(keycode_); }
+
+ private:
+  const u8 keycode_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleKeyAction);
 };
 
-#endif  // CKFW_SRC_UTIL_KEYINTERFACE_H
+#endif  // CKFW_SRC_UTIL_SIMPLEKEYACTION_H
