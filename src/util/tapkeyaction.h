@@ -18,10 +18,8 @@
 #define CKFW_SRC_UTIL_TAPKEYACTION_H_
 
 #include "core/common.h"
-#include "core/eventqueue.h"
 #include "core/timer.h"
-#include "eventlistenerinterface.h"
-#include "inputactioninterface.h"
+#include "keyactioninterface.h"
 
 // A short key press is calles "tap". Tap keys send a keycode when they are
 // released shortly after they've been pressed. If the key is held or anther
@@ -30,9 +28,7 @@
 // as the key is held down.
 // Example: TapKey(KC_BSPACE, KC_SHIFT) is key that acts like a normal shift
 // key in most cases. If it is tapped it acts as backspace though.
-class TapKeyAction
-    : public EventListenerInterface,
-      public InputActionInterface {
+class TapKeyAction : public KeyActionInterface {
  public:
   // A key press and release within kTapThreshold ms is interpreted as tap.
   // Maximum value is 255 because this is a unsigned 8bit value.
@@ -46,19 +42,7 @@ class TapKeyAction
         timer_(kTapThreshold, row, col),
         state_(kStart) {}
 
-  virtual inline void EventReceived(Event *event) {
-    Execute(event);
-  }
-
-  virtual void Pressed() {
-    Event event = { kEventPressed, row_, column_ };
-    Execute(&event);
-  }
-
-  virtual void Released() {
-    Event event = { kEventReleased, row_, column_ };
-    Execute(&event);
-  }
+  virtual void Execute(Event *event);
 
  private:
   enum TapStates {
@@ -70,8 +54,6 @@ class TapKeyAction
     kTapHold,
     kHold,
   };
-
-  void Execute(Event *ev);
 
   const u8 row_;
   const u8 column_;

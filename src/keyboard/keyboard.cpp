@@ -18,23 +18,17 @@
 #include "core/matrix.h"
 #include "core/report.h"
 #include "util/keycodes.h"
-#include "util/simplekeyaction.h"
 #include "util/tapkeyaction.h"
 
-// Modified BuTECK layout:
-// Q and Ü have been changed
-// 
-// B U . , Q P C L M Fe
+// BuTECK layout
+// B U . , X P C L M F
 // H I E A O D T R N S
 // K Y Ö Ä Ü J G W V Z
-static SimpleKeyAction keymap[matrix::kNumRows][matrix::kNumColumns] = {
-  { {KC_B}, {KC_U}, {KC_DOT}, {KC_COMM}, {KC_Q},
-    {KC_P}, {KC_C}, {KC_L}, {KC_M}, {KC_F}, },
-  { {KC_H}, {KC_I}, {KC_E}, {KC_A}, {KC_O},
-    {KC_D}, {KC_T}, {KC_R}, {KC_N}, {KC_S}, },
-  { {KC_K}, {KC_Z}, {KC_SCLN}, {KC_QUOT}, {KC_LBRC},
-    {KC_J}, {KC_G}, {KC_W}, {KC_V}, {KC_Y}, },
-  { {0}, {0}, {0}, {KC_SPC}, {0}, {0}, {0}, {0}, {0}, {0} },
+static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] =  {
+  { KC_B, KC_U, KC_DOT, KC_COMM, KC_X, KC_P, KC_C, KC_L, KC_M, KC_F },
+  { KC_H, KC_I, KC_E, KC_A, KC_O, KC_D, KC_T, KC_R, KC_N, KC_S },
+  { KC_K, KC_Z, KC_SCLN, KC_QUOT, KC_LBRC, KC_J, KC_G, KC_W, KC_V, KC_Y },
+  { 0, 0, 0, KC_SPC, 0, 0, 0, 0, 0, 0 },
 };
 
 static TapKeyAction actions[] = {
@@ -46,23 +40,20 @@ static TapKeyAction actions[] = {
 void Tick() {
   while (!EventQueueEmpty()) {
     Event ev = EventQueueRead();
+    for (TapKeyAction &action : actions)
+      action.Execute(&ev);
 
-    for (EventListenerInterface &action : actions) {
-      action.EventReceived(&ev);
-    }
-
-    InputActionInterface *input_action = &keymap[ev.row][ev.column];
+    u8 keycode = keymap[ev.row][ev.column];
 
     switch (ev.event) {
       case kEventPressed:
-        input_action->Pressed();
+        report.AddKeycode(keycode);
         break;
 
       case kEventReleased:
-        input_action->Released();
+        report.RemoveKeycode(keycode);
         break;
     }
   }
-
   report.Commit();
 }
