@@ -17,8 +17,6 @@
 #ifndef CFKW_SRC_USB_USB_H_
 #define CFKW_SRC_USB_USB_H_
 
-#include <stdio.h>
-
 #include <LUFA/Drivers/USB/USB.h>
 
 struct ReportData;
@@ -31,7 +29,7 @@ void Init();
 // Reads and writes endpoint data.
 void Task();
 
-// Adds a report to the internal report send queue.
+// Copies the report to the internal report send queue.
 void SendReport(const ReportData &report_data);
 
 extern "C" {
