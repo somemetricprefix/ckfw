@@ -21,8 +21,10 @@ TimerList Timer::timer_list_ = SLIST_HEAD_INITIALIZER(timer_list_);
 
 void Timer::Update() {
   Timer *iter, *save;
+
+  // Safe iteration so that timers can be removed.
   SLIST_FOREACH_SAFE(iter, &timer_list_, sl_entry_, save) {
-    if (--iter->remaining_ticks_ == 0) {
+    if (--iter->remaining_ticks_ <= 0) {
       EventQueueWrite(kEventTimeout, iter->row_, iter->column_);
       SLIST_REMOVE(&timer_list_, iter, Timer, sl_entry_);
     }
@@ -30,9 +32,12 @@ void Timer::Update() {
 }
 
 void Timer::Start() {
-  // If time is not up it is still in the list.
-  if (remaining_ticks_ == 0)
+  // Only insert timer to list if it’s not active already. 
+  if (remaining_ticks_ == 0) {
     SLIST_INSERT_HEAD(&timer_list_, this, sl_entry_);
+  } else {
+    LOG_WARNING("timer started while active");
+  }
 
   remaining_ticks_ = ticks_;
 }

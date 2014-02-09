@@ -20,8 +20,14 @@
 #include "common.h"
 #include "queue.h"
 
+// Create list type for timers.
 SLIST_HEAD(TimerList, Timer);
 
+// This class represents a fixed timer. Each timer is bound to a specific key in
+// the matrix. When Start() is called the timer is inserted into the active
+// timer list. When the timer timed out it is removed from the list and a timer
+// event is generated.
+// The timer must not be freed while it’s active.
 class Timer {
  public:
   constexpr Timer(u16 ticks, u8 row, u8 column)
@@ -31,19 +37,24 @@ class Timer {
         remaining_ticks_(0),
         sl_entry_() {}
 
+  // Starts the timer by attaching it to the timer List.
   void Start();
 
-  // Updates all timers in list. If a timer is finished a timeout event is
-  // added to the eventqueue.
+  // Updates all timers in list. Must be called every millisecond.
   static void Update();
 
  private:
+  // Timeout in milli seconds.
   const u16 ticks_;
+
+  // Key coordinates the timer is bound to.
   const u8 row_;
   const u8 column_;
+
   u16 remaining_ticks_;
   SLIST_ENTRY(Timer) sl_entry_;
 
+  // Contains all active timers.
   static TimerList timer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(Timer);
