@@ -1,27 +1,28 @@
 ckfw - custom keyboard firmware
 ===============================
 
-Keyboard firmware for custom made keyboards that use the Atmel AVR atmega32u4
-micro processor (the chip on the Teensy 2.0 development board).
+Keyboard firmware for custom made keyboards with the Atmel AVR atmega32u4 micro
+processor (the chip on the Teensy 2.0 development board).
 
 Why ckfw?
 ---------
 
-There are plenty keyboard firmwares around already (see Similar Projects). This
-may rise the question why should there be yet another keyboard firmware? The
-answer is simple: This project is mainly an excercise for the author to improve
-his C++ skills and implement features that are hard to do within the
-t.m.k keymap framework.  
-The author is happy if you use _ckfw_ for your custom keyboard even though
-he recommends using the _t.m.k Keyboard Firmware_ for most projects (for now)
-because _ckfw_ is not nearly as feature complete and well tested yet.
+There are plenty keyboard firmwares around already (see Similar Projects). So
+why on eath do we need another Teensy 2.0 compatible firmware? The answer is
+simple: We don’t. This project is mainly an excercise for the author to improve
+his C / C++ skills.
+This firmware is highly unstable and interfaces may still change a lot. For
+serios projects *t.m.k Keyboard Firmware* is recommended. It’s a great firmware
+with plenty of features and it’s been well adopted by the DIY community.
 
 Code Style
 ----------
 
-Preferred formattig is described by the [Google C++ Style Guide](/c++-style/).
+Preferred formattig is described in the [Google C++ Style Guide](/c++-style/).
 Filetype should be .cpp instead of .cc, because the LUFA build system only
 recognizes .cpp files.
+
+[c++-style]: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
 Similar Projects
 ----------------
@@ -34,9 +35,6 @@ License
 -------
 
 Code of this project is licensed under the ISC license. Some files which were
-taken or modified from other projects have other licenses. The used license is
-documented at the beginning of each file. The libraries in lib/ have their own
-license respectively.
-
-[c++-style]: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
-
+taken or modified from other projects may have other licenses. The used licenses
+are documented at the beginning of each file. The libraries in lib/ use their
+own license respectively.
