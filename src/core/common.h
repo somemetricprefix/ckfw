@@ -38,6 +38,7 @@ typedef unsigned int uint;
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+#include <LUFA/Drivers/USB/USB.h>
 #include <avr/pgmspace.h>
 #include <stdio.h>
 extern FILE console;
@@ -53,8 +54,8 @@ extern FILE console;
 #define LOG_WARNING(M, ...)
 #else
 #define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
-#define LOG_DEBUG(M, ...) fprintf_P(&console, PSTR("DEBUG: " M "\n"), ##__VA_ARGS__)
-#define LOG_WARNING(M, ...) fprintf_P(&console, PSTR("WARNING: " M "\n"), ##__VA_ARGS__)
+#define LOG_DEBUG(M, ...) fprintf_P(&console, PSTR("%5u DEBUG:\t" M "\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
+#define LOG_WARNING(M, ...) fprintf_P(&console, PSTR("%5u WARNING:\t" M "\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
 #endif
 
 #define PRINT(M, ...) fprintf_P(&console, PSTR(M), ##__VA_ARGS__)

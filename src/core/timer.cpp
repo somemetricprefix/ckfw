@@ -35,8 +35,9 @@ void Timer::Start() {
   // Only insert timer to list if it’s not active already. 
   if (remaining_ticks_ == 0) {
     SLIST_INSERT_HEAD(&timer_list_, this, sl_entry_);
+    LOG_WARNING("timer started while active (%2u,%2u)", row_, column_);
   } else {
-    LOG_WARNING("timer started while active");
+    LOG_WARNING("timer restarted while active (%2u,%2u)", row_, column_);
   }
 
   remaining_ticks_ = ticks_;

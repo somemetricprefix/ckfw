@@ -50,7 +50,7 @@ class Report {
     if (!keycode)
       return;
 
-    LOG_DEBUG("+keycode\t\t%.2X", keycode);
+    LOG_DEBUG("keycode added (%.2X)", keycode);
 
     KeycodeAction(keycode, true);
   }
@@ -60,7 +60,7 @@ class Report {
     if (!keycode)
       return;
 
-    LOG_DEBUG("-keycode\t\t%.2X", keycode);
+    LOG_DEBUG("keycode removed (%.2X)", keycode);
 
     KeycodeAction(keycode, false);
   }

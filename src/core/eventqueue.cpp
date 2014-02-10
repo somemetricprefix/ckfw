@@ -29,10 +29,13 @@ void EventQueueWrite(u8 event, u8 row, u8 col) {
 
   bool ok = event_ring_buffer.Write({event, row, col});
   if (!ok)
-    LOG_WARNING("Eventqueue is full.");
+    LOG_WARNING("eventqueue is full (%2u,%2u)", row, col);
+  else
+    LOG_DEBUG("event added to queue (%2u,%2u)", row, col);
 }
 
 Event EventQueueRead() {
+  LOG_DEBUG("event removed from queue");
   return event_ring_buffer.Read();
 }
 
