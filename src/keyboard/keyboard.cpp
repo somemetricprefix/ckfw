@@ -37,23 +37,21 @@ static TapKeyAction actions[] = {
   { 3, 2, KC_TAB, KC_LALT },
 };
 
-void Tick() {
-  while (!EventQueueEmpty()) {
-    Event ev = EventQueueRead();
-    for (TapKeyAction &action : actions)
-      action.Execute(&ev);
+void KeyEvent(Event event) {
+  for (TapKeyAction &action : actions)
+    action.Execute(&event);
 
-    u8 keycode = keymap[ev.row][ev.column];
+  u8 keycode = keymap[event.row][event.column];
 
-    switch (ev.event) {
-      case kEventPressed:
-        report.AddKeycode(keycode);
-        break;
+  switch (event.event) {
+    case kEventPressed:
+      report.AddKeycode(keycode);
+      break;
 
-      case kEventReleased:
-        report.RemoveKeycode(keycode);
-        break;
-    }
+    case kEventReleased:
+      report.RemoveKeycode(keycode);
+      break;
   }
+
   report.Commit();
 }

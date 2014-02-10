@@ -21,6 +21,7 @@
 #include <avr/wdt.h>
 
 #include "matrix.h"
+#include "eventqueue.h"
 #include "report.h"
 #include "usb/usb.h"
 
@@ -28,7 +29,7 @@ __attribute__((weak))
 void Init() {}
 
 __attribute__((weak))
-void Tick() {}
+void KeyEvent(Event event) {}
 
 int main(void)
 {
@@ -47,8 +48,10 @@ int main(void)
   sei();
 
   for (;;) {
-    Tick();
+    if (!EventQueueEmpty())
+      KeyEvent(EventQueueRead());
+
+    // Send reports and debug messages to host.
     usb::Task();
-    sleep_mode();
   }
 }

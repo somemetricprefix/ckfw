@@ -34,14 +34,14 @@ enum {
 struct Event {
   u8 event;
 
-  u8 row;
-  u8 column;
+  u8 row : 4;
+  u8 column : 4;
 };
 
 // Add an event to the event queue.
 void EventQueueWrite(u8 event, u8 row, u8 col);
 
-// Returns a poitner to Event struct that can be read from.
+// Returns a pointer to an Event struct that can be read from.
 Event EventQueueRead();
 
 // Returns true if the queue is empty, false otherwise.
