@@ -10,12 +10,6 @@ do { \
   PORTD |= (1 << 6); \
 } while (0);
 
-// Defines the number of rows in the keyboard matrix.
-#define MATRIX_NUM_ROWS 4
-
-// Defines the number of columns in the keyboard matrix.
-#define MATRIX_NUM_COLUMNS 10
-
 // Pin mapping for row pins.
 #define MATRIX_ROW_PORTS(PORT) \
   PORT(B, 0) \
