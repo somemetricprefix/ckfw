@@ -19,15 +19,15 @@ do { \
 
 // Pin mapping for column pins.
 #define MATRIX_COLUMN_PORTS(PORT) \
-  PORT(F, 0) \
   PORT(F, 1) \
+  PORT(F, 0) \
   PORT(F, 4) \
   PORT(F, 5) \
   PORT(F, 6) \
-  PORT(F, 7) \
-  PORT(B, 6) \
-  PORT(B, 5) \
+  PORT(D, 7) \
   PORT(B, 4) \
-  PORT(D, 7)
+  PORT(B, 5) \
+  PORT(B, 6) \
+  PORT(F, 7)
 
 #endif // CKFW_SRC_CONFIG_H_
