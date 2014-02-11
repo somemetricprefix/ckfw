@@ -115,6 +115,7 @@ static void WriteConsoleEndpoint() {
 }
 
 void Task() {
+  USB_USBTask();
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
 
