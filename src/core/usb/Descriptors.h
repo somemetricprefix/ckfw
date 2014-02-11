@@ -28,6 +28,31 @@
 
 		#include <LUFA/Drivers/USB/USB.h>
 
+	/* Macros: */
+		/** Endpoint address of the Keyboard HID reporting IN endpoint. */
+		#define KEYBOARD_EPADDR                (ENDPOINT_DIR_IN | 1)
+
+		/** Size in bytes of the Keyboard HID reporting IN endpoint. */
+		#define KEYBOARD_EPSIZE                16
+
+		/** Endpoint address of the CDC device-to-host notification IN endpoint. */
+		#define CDC_NOTIFICATION_EPADDR        (ENDPOINT_DIR_IN  | 2)
+
+		/** Size in bytes of the CDC device-to-host notification IN endpoint. */
+		#define CDC_NOTIFICATION_EPSIZE        8
+
+		/** Endpoint address of the CDC device-to-host data IN endpoint. */
+		#define CDC_TX_EPADDR                  (ENDPOINT_DIR_IN  | 3)
+
+		/** Size in bytes of the CDC data IN endpoint. */
+		#define CDC_TX_EPSIZE                  64
+
+		/** Endpoint address of the CDC host-to-device data OUT endpoint. */
+		#define CDC_RX_EPADDR                  (ENDPOINT_DIR_OUT | 4)
+
+		/** Size in bytes of the CDC data OUT endpoint. */
+		#define CDC_RX_EPSIZE                  8
+
 	/* Type Defines: */
 		/** Type define for the device configuration descriptor structure. This must be defined in the
 		 *  application code, as the configuration descriptor contains several sub-descriptors which
@@ -37,16 +62,25 @@
 		{
 			USB_Descriptor_Configuration_Header_t config;
 
-			// Keyboard HID Interface
-			USB_Descriptor_Interface_t            keyboard_interface;
-			USB_HID_Descriptor_HID_t              keyboard_hid;
-			USB_Descriptor_Endpoint_t             keyboard_endpoint;
+			// CDC Interface Association
+			USB_Descriptor_Interface_Association_t   CDC_IAD;
 
-			// Console HID Interface
-			USB_Descriptor_Interface_t            console_interface;
-			USB_HID_Descriptor_HID_t              console_hid;
-			USB_Descriptor_Endpoint_t             console_in_endpoint;
-			USB_Descriptor_Endpoint_t             console_out_endpoint;
+			// CDC Control Interface
+			USB_Descriptor_Interface_t               CDC_CCI_Interface;
+			USB_CDC_Descriptor_FunctionalHeader_t    CDC_Functional_Header;
+			USB_CDC_Descriptor_FunctionalACM_t       CDC_Functional_ACM;
+			USB_CDC_Descriptor_FunctionalUnion_t     CDC_Functional_Union;
+			USB_Descriptor_Endpoint_t                CDC_NotificationEndpoint;
+
+			// CDC Data Interface
+			USB_Descriptor_Interface_t               CDC_DCI_Interface;
+			USB_Descriptor_Endpoint_t                CDC_DataOutEndpoint;
+			USB_Descriptor_Endpoint_t                CDC_DataInEndpoint;
+
+			// Keyboard HID Interface
+			USB_Descriptor_Interface_t               keyboard_interface;
+			USB_HID_Descriptor_HID_t                 keyboard_hid;
+			USB_Descriptor_Endpoint_t                keyboard_endpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
@@ -59,15 +93,6 @@
 		    STRING_ID_Manufacturer  = 1, /**< Manufacturer string ID */
 		    STRING_ID_Product       = 2, /**< Product string ID */
 		};
-
-		#define KEYBOARD_INTERFACE           0
-		#define KEYBOARD_EPADDR              (ENDPOINT_DIR_IN | 1)
-		#define KEYBOARD_EPSIZE              16
-
-		#define CONSOLE_INTERFACE            1
-		#define CONSOLE_IN_EPADDR            (ENDPOINT_DIR_IN | 2)
-		#define CONSOLE_OUT_EPADDR           (ENDPOINT_DIR_OUT | 3)
-		#define CONSOLE_EPSIZE               32
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

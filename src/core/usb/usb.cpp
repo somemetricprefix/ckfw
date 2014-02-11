@@ -23,7 +23,8 @@
 #include "../timer.h"
 #include "descriptors.h"
 
-// Console can be used with stdio functions.
+// Standard file stream for the CDC interface when set up, so that the virtual
+// CDC COM port can be used like any regular character stream in the C APIs.
 FILE console;
 
 namespace usb {
@@ -37,29 +38,22 @@ namespace usb {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-static const uint kConsoleSendBufferSize = 256;
-static u8 console_send_rb_data[kConsoleSendBufferSize];
-static RingBuffer<u8> console_send_rb(console_send_rb_data,
-                                      kConsoleSendBufferSize);
-
 static const uint kReportBufferSize = 8;
 static ReportData report_rb_data[kReportBufferSize];
 static RingBuffer<ReportData> report_rb(report_rb_data, kReportBufferSize);
 
 static ReportData report_data;
 
-// Writes single byte to console endpoint.
-static int ConsoleWrite(char byte, FILE *unused) {
-  return !console_send_rb.Write(byte);
-}
-
 void Init() {
-  // Setup a FILE to use stdio functions for the console.
-  fdev_setup_stream(&console, ConsoleWrite, nullptr, _FDEV_SETUP_WRITE);
+  // Create a regular character stream for the interface so that it can be used
+  // with the stdio.h functions.
+  CDC_Device_CreateStream(&console_interface, &console);
+
   USB_Init();
 }
 
-// Gets current report data and writes it to the keyboard endpoint.
+// Gets current report data and writes it to the keyboard endpoint if it has
+// changed.
 static void WriteKeyboardEndpoint() {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
   if (!Endpoint_IsINReady())
@@ -93,25 +87,11 @@ static void WriteKeyboardEndpoint() {
   Endpoint_ClearIN();
 }
 
-// Writes console IN endpoint. hid_listen tool needs a full IN endpoint all the
-// time.
-static void WriteConsoleEndpoint() {
-  Endpoint_SelectEndpoint(CONSOLE_IN_EPADDR);
-  if (!Endpoint_IsINReady())
-    return;
-
-  // Fill the bank with ...
-  while(Endpoint_IsReadWriteAllowed()) {
-    if (!console_send_rb.Empty()) {
-      // ... the currently available characters ...
-      Endpoint_Write_8(console_send_rb.Read());
-    } else {
-      // ... or with zeros to keep the connection to hid_listen program alive.
-      Endpoint_Write_8(0);
-    }
-  }
-
-  Endpoint_ClearIN();
+static void UpdateConsole() {
+  // Must throw away unused bytes from the host, or it will lock up while
+  // waiting for the device.
+  CDC_Device_ReceiveByte(&console_interface);
+  CDC_Device_USBTask(&console_interface);
 }
 
 void Task() {
@@ -120,7 +100,7 @@ void Task() {
     return;
 
   WriteKeyboardEndpoint();
-  WriteConsoleEndpoint();
+  UpdateConsole();
 }
 
 void SendReport(const ReportData &report_data) {
@@ -131,10 +111,8 @@ void SendReport(const ReportData &report_data) {
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
                              KEYBOARD_EPSIZE, 1);
-  Endpoint_ConfigureEndpoint(CONSOLE_IN_EPADDR, EP_TYPE_INTERRUPT,
-                             CONSOLE_EPSIZE, 2);
-  Endpoint_ConfigureEndpoint(CONSOLE_OUT_EPADDR, EP_TYPE_INTERRUPT,
-                             CONSOLE_EPSIZE, 1);
+  CDC_Device_ConfigureEndpoints(&console_interface);
+
   USB_Device_EnableSOFEvents();
 }
 
@@ -191,6 +169,8 @@ void EVENT_USB_Device_ControlRequest(void) {
       }
       break;
   }
+
+  CDC_Device_ProcessControlRequest(&console_interface);
 }
 
 // Called every milli second by LUFA.

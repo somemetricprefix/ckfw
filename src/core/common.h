@@ -54,8 +54,8 @@ extern FILE console;
 #define LOG_WARNING(M, ...)
 #else
 #define ASSERT(cond) do { if (!(cond)) { ERROR() } } while (0)
-#define LOG_DEBUG(M, ...) fprintf_P(&console, PSTR("%5u DEBUG:\t" M "\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
-#define LOG_WARNING(M, ...) fprintf_P(&console, PSTR("%5u WARNING:\t" M "\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
+#define LOG_DEBUG(M, ...) fprintf_P(&console, PSTR("%5u DEBUG:\t" M "\r\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
+#define LOG_WARNING(M, ...) fprintf_P(&console, PSTR("%5u WARNING:\t" M "\r\n"), USB_Device_GetFrameNumber(), ##__VA_ARGS__)
 #endif
 
 #define PRINT(M, ...) fprintf_P(&console, PSTR(M), ##__VA_ARGS__)

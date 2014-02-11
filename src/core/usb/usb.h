@@ -21,6 +21,8 @@
 
 struct ReportData;
 
+extern USB_ClassInfo_CDC_Device_t console_interface;
+
 namespace usb {
 
 // Initializes all internal usb resources.
