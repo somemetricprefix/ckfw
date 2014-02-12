@@ -38,11 +38,7 @@ namespace usb {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-static const uint kReportBufferSize = 8;
-static ReportData report_rb_data[kReportBufferSize];
-static RingBuffer<ReportData> report_rb(report_rb_data, kReportBufferSize);
-
-static ReportData report_data;
+static u8 report[ReportData::kDataSize];
 
 void Init() {
   // Create a regular character stream for the interface so that it can be used
@@ -52,38 +48,13 @@ void Init() {
   USB_Init();
 }
 
-// Gets current report data and writes it to the keyboard endpoint if it has
-// changed.
+// Resends report when there has been no change for the last idle period.
 static void WriteKeyboardEndpoint() {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-  if (!Endpoint_IsINReady())
+  if (!Endpoint_IsINReady() || idle_time_remaining > 0)
     return;
 
-  bool send_data = false;
-
-  if (!report_rb.Empty()) {
-    ReportData curr_data = report_rb.Read();
-
-    // Send report only if it has changed.
-    if (memcmp(report_data.data, curr_data.data, ReportData::kDataSize)) {
-      // Copy new report to report buffer.
-      report_data = curr_data;
-
-      send_data = true;
-    }
-  }
-
-  if (idle_time_remaining == 0) {
-    // Just send the same report again.
-    send_data = true;
-  }
-
-  if (send_data) {
-    Endpoint_Write_Stream_LE(report_data.data, ReportData::kDataSize, NULL);
-    idle_time_remaining = idle_time;
-  }
-
-  // Finalize stream.
+  Endpoint_Write_Stream_LE(report, ReportData::kDataSize, NULL);
   Endpoint_ClearIN();
 }
 
@@ -104,7 +75,16 @@ void Task() {
 }
 
 void SendReport(const ReportData &report_data) {
-  report_rb.Write(report_data);
+  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
+
+  // Copy report to internal buffer, so that it can be sent again when idle time
+  // is over.
+  memcpy(report, report_data.data, ReportData::kDataSize);
+
+  Endpoint_Write_Stream_LE(report, ReportData::kDataSize, NULL);
+  Endpoint_ClearIN();
+
+  idle_time_remaining = idle_time;
 }
 
 // Registers all endpoints and enables SOF interrupt.
@@ -132,8 +112,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write report data to the control endpoint. Endpoint is cleared
         // automatically.
-        Endpoint_Write_Control_Stream_LE(report_data.data,
-                                         ReportData::kDataSize);
+        Endpoint_Write_Control_Stream_LE(report, ReportData::kDataSize);
 
         Endpoint_ClearStatusStage();
       }
