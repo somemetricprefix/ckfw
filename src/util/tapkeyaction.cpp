@@ -34,7 +34,7 @@ void TapKeyAction::Execute(Event *ev) {
   switch (state_) {
     case TapStates::kStart:
       if (pressed) {
-        timer_.Start();
+        TimerStart(&timer_);
         state_ = TapStates::kWaitTapRelease1;
       }
       break;
@@ -54,10 +54,10 @@ void TapKeyAction::Execute(Event *ev) {
     case TapStates::kTap:
       if (pressed) {
         report.AddKeycode(tap_keycode_);
-        timer_.Start();
+        TimerStart(&timer_);
         state_ = kWaitTapRelease2;
       } else {
-        timer_.Start();
+        TimerStart(&timer_);
         state_ = kWaitTapPress;
       }
       break;
@@ -67,7 +67,7 @@ void TapKeyAction::Execute(Event *ev) {
         state_ = kStart;
       } else if (pressed) {
         report.AddKeycode(tap_keycode_);
-        timer_.Start();
+        TimerStart(&timer_);
         state_ = kWaitTapRelease2;
       }
       break;

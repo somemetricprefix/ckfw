@@ -17,28 +17,33 @@
 #include "eventqueue.h"
 #include "timer.h"
 
-TimerList Timer::timer_list_ = SLIST_HEAD_INITIALIZER(timer_list_);
+// Create list type for timers.
+SLIST_HEAD(TimerList, Timer);
 
-void Timer::Update() {
-  Timer *iter, *save;
+// Contains all active timers.
+static struct TimerList timer_list = SLIST_HEAD_INITIALIZER(timer_list);
 
-  // Safe iteration so that timers can be removed.
-  SLIST_FOREACH_SAFE(iter, &timer_list_, sl_entry_, save) {
-    if (--iter->remaining_ticks_ <= 0) {
-      EventQueueWrite(kEventTimeout, iter->row_, iter->column_);
-      SLIST_REMOVE(&timer_list_, iter, Timer, sl_entry_);
-    }
+void TimerStart(struct Timer *timer) {
+  // Only insert timer to list if it’s not active already.
+  if (timer->remaining_ticks == 0) {
+    SLIST_INSERT_HEAD(&timer_list, timer, sl_entry);
+    LOG_WARNING("timer started (%2u,%2u)", timer->row, timer->column);
+  } else {
+    LOG_WARNING("timer restarted while active (%2u,%2u)",
+                timer->row, timer->column);
   }
+
+  timer->remaining_ticks = timer->ticks;
 }
 
-void Timer::Start() {
-  // Only insert timer to list if it’s not active already. 
-  if (remaining_ticks_ == 0) {
-    SLIST_INSERT_HEAD(&timer_list_, this, sl_entry_);
-    LOG_WARNING("timer started while active (%2u,%2u)", row_, column_);
-  } else {
-    LOG_WARNING("timer restarted while active (%2u,%2u)", row_, column_);
-  }
+void TimersUpdate(void) {
+  struct Timer *iter, *save;
 
-  remaining_ticks_ = ticks_;
+  // Safe iteration so that timers can be removed.
+  SLIST_FOREACH_SAFE(iter, &timer_list, sl_entry, save) {
+    if (--iter->remaining_ticks <= 0) {
+      EventQueueWrite(kEventTimeout, iter->row, iter->column);
+      SLIST_REMOVE(&timer_list, iter, Timer, sl_entry);
+    }
+  }
 }

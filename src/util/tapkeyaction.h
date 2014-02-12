@@ -39,7 +39,7 @@ class TapKeyAction : public KeyActionInterface {
         column_(col),
         tap_keycode_(tap_keycode),
         hold_keycode_(hold_keycode),
-        timer_(kTapThreshold, row, col),
+        timer_{kTapThreshold, row, col},
         state_(kStart) {}
 
   virtual void Execute(Event *event);

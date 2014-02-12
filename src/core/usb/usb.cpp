@@ -157,7 +157,7 @@ void EVENT_USB_Device_StartOfFrame(void) {
   if (idle_time_remaining)
     --idle_time_remaining;
 
-  Timer::Update();
+  TimersUpdate();
   MatrixUpdate();
 }
 

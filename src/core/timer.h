@@ -20,44 +20,37 @@
 #include "common.h"
 #include "queue.h"
 
-// Create list type for timers.
-SLIST_HEAD(TimerList, Timer);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// This class represents a fixed timer. Each timer is bound to a specific key in
-// the matrix. When Start() is called the timer is inserted into the active
-// timer list. When the timer timed out it is removed from the list and a timer
-// event is generated.
-// The timer must not be freed while it’s active.
-class Timer {
- public:
-  constexpr Timer(u16 ticks, u8 row, u8 column)
-      : ticks_(ticks),
-        row_(row),
-        column_(column),
-        remaining_ticks_(0),
-        sl_entry_() {}
-
-  // Starts the timer by attaching it to the timer List.
-  void Start();
-
-  // Updates all timers in list. Must be called every millisecond.
-  static void Update();
-
- private:
+// This struct represents a fixed timer. Because the timer generates an event
+// after timeout it needs to be bound to a key as identification. When the
+// TimerStart() function is called the timer is inserted into the active timer
+// list. After the timer finished it is removed from this list and a timer event
+// is generated.
+// The timer must not be deallocated while it’s active.
+struct Timer {
   // Timeout in milli seconds.
-  const u16 ticks_;
+  u16 ticks;
 
   // Key coordinates the timer is bound to.
-  const u8 row_;
-  const u8 column_;
+  u8 row : 4;
+  u8 column : 4;
 
-  u16 remaining_ticks_;
-  SLIST_ENTRY(Timer) sl_entry_;
-
-  // Contains all active timers.
-  static TimerList timer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(Timer);
+  u16 remaining_ticks;
+  SLIST_ENTRY(Timer) sl_entry;
 };
+
+// Starts a timer by attaching it to the timer List.
+void TimerStart(struct Timer *timer);
+
+// Updates all timers in list. This is called every millisecond in the core.
+// Should not be called by any user code.
+void TimersUpdate(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // CKFW_SRC_CORE_TIMER_H_
