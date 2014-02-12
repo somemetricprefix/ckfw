@@ -19,27 +19,30 @@
 
 #include <LUFA/Drivers/USB/USB.h>
 
+#include "../common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ReportData;
 
-extern USB_ClassInfo_CDC_Device_t console_interface;
-
-namespace usb {
-
 // Initializes all internal usb resources.
-void Init();
+void UsbInit(void);
 
 // Reads and writes endpoint data.
-void Task();
+void UsbTask(void);
 
 // Copies the report to the internal report send queue.
-void SendReport(const ReportData &report_data);
+void UsbSendReport(const u8 *report_data);
 
-extern "C" {
-  void EVENT_USB_Device_ConfigurationChanged(void);
-  void EVENT_USB_Device_ControlRequest(void);
-  void EVENT_USB_Device_StartOfFrame(void);
+// LUFA event handlers.
+void EVENT_USB_Device_ConfigurationChanged(void);
+void EVENT_USB_Device_ControlRequest(void);
+void EVENT_USB_Device_StartOfFrame(void);
+
+#ifdef __cplusplus
 }
-
-}  // namespace usb
+#endif
 
 #endif  // CFKW_SRC_USB_USB_H_

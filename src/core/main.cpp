@@ -40,8 +40,9 @@ int main(void)
   // Disable clock division
   clock_prescale_set(clock_div_1);
 
-  usb::Init();
   MatrixInit();
+  UsbInit();
+
   Init();
 
   // Enable interrupts.
@@ -52,6 +53,6 @@ int main(void)
       KeyEvent(EventQueueRead());
 
     // Send reports and debug messages to host.
-    usb::Task();
+    UsbTask();
   }
 }

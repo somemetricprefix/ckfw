@@ -18,8 +18,6 @@
 
 #include "../common.h"
 #include "../matrix.h"
-#include "../report.h"
-#include "../ringbuffer.h"
 #include "../timer.h"
 #include "descriptors.h"
 
@@ -27,7 +25,26 @@
 // CDC COM port can be used like any regular character stream in the C APIs.
 FILE console;
 
-namespace usb {
+USB_ClassInfo_CDC_Device_t console_interface = {
+  .Config = {
+    .ControlInterfaceNumber = 0,
+    .DataINEndpoint = {
+      .Address = CDC_TX_EPADDR,
+      .Size    = CDC_TX_EPSIZE,
+      .Banks   = 2,
+    },
+    .DataOUTEndpoint = {
+      .Address = CDC_RX_EPADDR,
+      .Size    = CDC_RX_EPSIZE,
+      .Banks   = 1,
+    },
+    .NotificationEndpoint = {
+      .Address = CDC_NOTIFICATION_EPADDR,
+      .Size    = CDC_NOTIFICATION_EPSIZE,
+      .Banks   = 1,
+    },
+  },
+};
 
 // Current idle period in ms. This is set by the host via a Set Idle HID class
 // request to silence the device's reports for either the entire idle
@@ -38,9 +55,10 @@ namespace usb {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-static u8 report[ReportData::kDataSize];
+#define REPORT_SIZE 16
+static u8 report[REPORT_SIZE];
 
-void Init() {
+void UsbInit(void) {
   // Create a regular character stream for the interface so that it can be used
   // with the stdio.h functions.
   CDC_Device_CreateStream(&console_interface, &console);
@@ -49,23 +67,23 @@ void Init() {
 }
 
 // Resends report when there has been no change for the last idle period.
-static void WriteKeyboardEndpoint() {
+static void WriteKeyboardEndpoint(void) {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
   if (!Endpoint_IsINReady() || idle_time_remaining > 0)
     return;
 
-  Endpoint_Write_Stream_LE(report, ReportData::kDataSize, NULL);
+  Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
   Endpoint_ClearIN();
 }
 
-static void UpdateConsole() {
+static void UpdateConsole(void) {
   // Must throw away unused bytes from the host, or it will lock up while
   // waiting for the device.
   CDC_Device_ReceiveByte(&console_interface);
   CDC_Device_USBTask(&console_interface);
 }
 
-void Task() {
+void UsbTask(void) {
   USB_USBTask();
   if (USB_DeviceState != DEVICE_STATE_Configured)
     return;
@@ -74,14 +92,14 @@ void Task() {
   UpdateConsole();
 }
 
-void SendReport(const ReportData &report_data) {
+void UsbSendReport(const u8 *report_data) {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
 
   // Copy report to internal buffer, so that it can be sent again when idle time
   // is over.
-  memcpy(report, report_data.data, ReportData::kDataSize);
+  memcpy(report, report_data, REPORT_SIZE);
 
-  Endpoint_Write_Stream_LE(report, ReportData::kDataSize, NULL);
+  Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
   Endpoint_ClearIN();
 
   idle_time_remaining = idle_time;
@@ -112,7 +130,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write report data to the control endpoint. Endpoint is cleared
         // automatically.
-        Endpoint_Write_Control_Stream_LE(report, ReportData::kDataSize);
+        Endpoint_Write_Control_Stream_LE(report, REPORT_SIZE);
 
         Endpoint_ClearStatusStage();
       }
@@ -160,5 +178,3 @@ void EVENT_USB_Device_StartOfFrame(void) {
   TimersUpdate();
   MatrixUpdate();
 }
-
-}  // namespace usb

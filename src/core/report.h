@@ -66,7 +66,7 @@ class Report {
   }
 
   // Pass the record data to the usb code for sending.
-  inline void Commit() { usb::SendReport(data_); }
+  inline void Commit() { UsbSendReport(data_.data); }
 
  private:
   // Adds or removes a keycode from report.
