@@ -24,7 +24,7 @@
 // B U . , X P C L M F
 // H I E A O D T R N S
 // K Y Ö Ä Ü J G W V Z
-static const u8 keymap[matrix::kNumRows][matrix::kNumColumns] =  {
+static const u8 keymap[MATRIX_NUM_ROWS][MATRIX_NUM_COLUMNS] =  {
   { KC_B, KC_U, KC_DOT, KC_COMM, KC_X, KC_P, KC_C, KC_L, KC_M, KC_F },
   { KC_H, KC_I, KC_E, KC_A, KC_O, KC_D, KC_T, KC_R, KC_N, KC_S },
   { KC_K, KC_Z, KC_SCLN, KC_QUOT, KC_LBRC, KC_J, KC_G, KC_W, KC_V, KC_Y },

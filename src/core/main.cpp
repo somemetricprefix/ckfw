@@ -41,7 +41,7 @@ int main(void)
   clock_prescale_set(clock_div_1);
 
   usb::Init();
-  matrix::Init();
+  MatrixInit();
   Init();
 
   // Enable interrupts.

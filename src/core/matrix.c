@@ -20,27 +20,23 @@
 
 #include "eventqueue.h"
 
-namespace matrix {
-
-struct OutputPort {
+#define AS_DATA(port, bit) { (u16)&PORT##port, (u16)&DDR##port, bit },
+static const struct {
   const u8 port;
   const u8 ddr;
   const u8 bit;
-};
-
-#define AS_DATA(port, bit) { (u16)&PORT##port, (u16)&DDR##port, bit },
-static const OutputPort row_ports[kNumRows] = { MATRIX_ROW_PORTS(AS_DATA) };
+} row_ports[MATRIX_NUM_ROWS] = { MATRIX_ROW_PORTS(AS_DATA) };
 
 // Each key is represented as an 8-bit value.
 // It is a bitmask of the last states of that key.
-u8 key_matrix[kNumRows][kNumColumns];
+u8 key_matrix[MATRIX_NUM_ROWS][MATRIX_NUM_COLUMNS];
 
 // Pull up on IO port is enabled by setting DDRx = 0 and PORTx = 1.
 #define AS_PULLUP(port, bit) \
   BIT_CLR(DDR##port, bit); \
   BIT_SET(PORT##port, bit);
 
-void Init() {
+void MatrixInit(void) {
   // Configure column ports as input with pull-up.
   MATRIX_COLUMN_PORTS(AS_PULLUP);
 };
@@ -73,9 +69,9 @@ enum { MATRIX_COLUMN_PORTS(AS_ENUM) };
   key_matrix[row][ID(port, bit)] = key; \
 }
 
-void Update() {
+void MatrixUpdate(void) {
   // First pass: scan matrix
-  for (u8 row = 0; row < kNumRows; row++) {
+  for (u8 row = 0; row < MATRIX_NUM_ROWS; row++) {
     SelectRow(row);
 
     MATRIX_COLUMN_PORTS(AS_READ_INPUT);
@@ -86,8 +82,8 @@ void Update() {
   // Second pass: debounce
   // The method used here was mentioned by Soarer in a thread on geekhack:
   // http://geekhack.org/index.php?topic=42385.msg861321#msg861321
-  for (u8 i = 0; i < kNumRows; i++) {
-    for (u8 j = 0; j < kNumColumns; j++) {
+  for (u8 i = 0; i < MATRIX_NUM_ROWS; i++) {
+    for (u8 j = 0; j < MATRIX_NUM_COLUMNS; j++) {
       // Apply mask to get the 6 state bits.
       u8 key = key_matrix[i][j] & 0b00111111;
 
@@ -105,5 +101,3 @@ void Update() {
     }
   }
 }
-
-}  // namespace matrix

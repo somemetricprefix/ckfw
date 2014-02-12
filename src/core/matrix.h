@@ -20,23 +20,27 @@
 #include "common.h"
 #include "config.h"
 
-namespace matrix {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Macro magic to determine how many row and port pins are in the config file.
+// Macro magic to determine the number of row and port pins.
 #define ID(port, bit) kPort##port##bit
 #define AS_STRUCT(port, bit) u8 ID(port, bit);
 struct __NumRows { MATRIX_ROW_PORTS(AS_STRUCT) };
 struct __NumColumns { MATRIX_COLUMN_PORTS(AS_STRUCT) };
 
-const uint kNumRows = sizeof(__NumRows);
-const uint kNumColumns = sizeof(__NumColumns);
+#define MATRIX_NUM_ROWS (sizeof(struct __NumRows))
+#define MATRIX_NUM_COLUMNS (sizeof(struct __NumColumns))
 
 // Initializes the I/O ports of the keys.
-void Init();
+void MatrixInit(void);
 
 // Updates the keys with the current key states.
-void Update();
+void MatrixUpdate(void);
 
-}  // namespace matrix
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // CKFW_SRC_CORE_MATRIX_H_

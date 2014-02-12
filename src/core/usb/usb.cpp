@@ -158,7 +158,7 @@ void EVENT_USB_Device_StartOfFrame(void) {
     --idle_time_remaining;
 
   Timer::Update();
-  matrix::Update();
+  MatrixUpdate();
 }
 
 }  // namespace usb
