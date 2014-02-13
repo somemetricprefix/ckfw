@@ -45,13 +45,13 @@ void KeyEvent(Event event) {
 
   switch (event.type) {
     case kEventPressed:
-      report.AddKeycode(keycode);
+      ReportAddKeycode(keycode);
       break;
 
     case kEventReleased:
-      report.RemoveKeycode(keycode);
+      ReportRemoveKeycode(keycode);
       break;
   }
 
-  report.Commit();
+  ReportSend();
 }

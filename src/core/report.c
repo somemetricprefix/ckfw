@@ -16,24 +16,43 @@
 
 #include "report.h"
 
-Report report;
+// The report format is defined at HID descriptor level. This implemtation
+// defines the report data as bitmap of 16 bytes. The first byte contains the
+// modifier bitmap and the remaining 15 bytes are mapped to keycodes.
+//
+// Example:
+// The keycode value of 0x04/'A' is equal to the 5th bit in the second byte of
+// the report (1 shifted 4 times left). Keycode 0x09/'F' would be the second bit
+// of the 3rd byte.
+//
+// Byte    1    |   2    |   3    |  4-16
+// Bits 00000000|00000000|00000000|000..000
+//      \______/ \________________________/
+//         |                |
+//      Modifiers          Keys
+
+static u8 report_data[REPORT_SIZE];
 
 static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
 
-void Report::KeycodeAction(u8 keycode, bool add) {
-  u8 data_index;
+void ReportKeycodeAction(u8 keycode, bool add) {
+  u8 index;
 
   if (IsModifier(keycode)) {
-    data_index = 0;
+    index = 0;
   } else {
-    // Adding one skips the Modifier byte.
-    data_index = 1 + (keycode / 8);
+    // Add one to skip the modifier byte.
+    index = 1 + (keycode / 8);
   }
 
   u8 nth_bit = (keycode % 8);
 
   if (add)
-    BIT_SET(data_.data[data_index], nth_bit);
+    BIT_SET(report_data[index], nth_bit);
   else
-    BIT_CLR(data_.data[data_index], nth_bit);
+    BIT_CLR(report_data[index], nth_bit);
+}
+
+void ReportSend(void) {
+  UsbSendReport(report_data);
 }

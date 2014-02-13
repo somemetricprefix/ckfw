@@ -18,6 +18,7 @@
 
 #include "../common.h"
 #include "../matrix.h"
+#include "../report.h"
 #include "../timer.h"
 #include "descriptors.h"
 
@@ -55,7 +56,6 @@ USB_ClassInfo_CDC_Device_t console_interface = {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-#define REPORT_SIZE 16
 static u8 report[REPORT_SIZE];
 
 void UsbInit(void) {

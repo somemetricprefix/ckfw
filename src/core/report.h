@@ -20,63 +20,33 @@
 #include "common.h"
 #include "usb/usb.h"
 
-  // The report format is defined at HID descriptor level. This implemtation
-  // asserts report data to be a bitmap of 16 bytes. The first byte contains the
-  // modifier bitmal. The bits of the remaining 15 bytes are mapped to a keycode.
-  //
-  // Example:
-  // The keycode value of 0x04/'A' is equal to the 4th bit in the second byte of
-  // the report. Keycode 0x09/'F' would be the first bit of the 3rd byte.
-  //
-  // Byte    1    |   2    |   3    |  4-16
-  // Bits 00000000|0000a000|00000000|000..000
-  //      \______/ \________________________/
-  //         |                |
-  //      Modifiers          Keys
-struct ReportData {
-  static const u8 kDataSize = 16;
-  u8 data[kDataSize];
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // The HID report is an encoded set of keycodes that is transferred over usb.
-// This class represents a report and has methods to translate keycodes to the
-// format that is specified by the HID report descriptor.
-class Report {
- public:
-  constexpr Report() : data_({{0}}) {}
+// This file defines funtions to translate keycodes into the report format.
 
-  // Adds an keycode to report.
-  inline void AddKeycode(u8 keycode) {
-    if (!keycode)
-      return;
+#define REPORT_SIZE 16
 
-    LOG_DEBUG("keycode added (%.2X)", keycode);
+void ReportKeycodeAction(u8 keycode, bool add);
 
-    KeycodeAction(keycode, true);
-  }
+static inline void ReportAddKeycode(u8 keycode) {
+  LOG_DEBUG("keycode added (0x%.2X)", keycode);
 
-  // Removes an keycode from report.
-  inline void RemoveKeycode(u8 keycode) {
-    if (!keycode)
-      return;
+  ReportKeycodeAction(keycode, true);
+}
 
-    LOG_DEBUG("keycode removed (%.2X)", keycode);
+static inline void ReportRemoveKeycode(u8 keycode) {
+  LOG_DEBUG("keycode removed (0x%.2X)", keycode);
 
-    KeycodeAction(keycode, false);
-  }
+  ReportKeycodeAction(keycode, false);
+}
 
-  // Pass the record data to the usb code for sending.
-  inline void Commit() { UsbSendReport(data_.data); }
+void ReportSend(void);
 
- private:
-  // Adds or removes a keycode from report.
-  void KeycodeAction(u8 keycode, bool add);
-
-  ReportData data_;
-
-  DISALLOW_COPY_AND_ASSIGN(Report);
-};
-
-extern Report report;
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // CKFW_SRC_CORE_REPORT_H_

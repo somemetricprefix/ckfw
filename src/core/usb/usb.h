@@ -25,8 +25,6 @@
 extern "C" {
 #endif
 
-struct ReportData;
-
 // Initializes all internal usb resources.
 void UsbInit(void);
 

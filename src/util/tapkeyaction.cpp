@@ -41,19 +41,19 @@ void TapKeyAction::Execute(Event *ev) {
 
     case TapStates::kWaitTapRelease1:
       if (other_key_pressed || timeout) {
-        report.AddKeycode(hold_keycode_);
+        ReportAddKeycode(hold_keycode_);
         state_ = TapStates::kHold;
       } else if (released) {
-        report.AddKeycode(tap_keycode_);
-        report.Commit();
-        report.RemoveKeycode(tap_keycode_);
+        ReportAddKeycode(tap_keycode_);
+        ReportSend();
+        ReportRemoveKeycode(tap_keycode_);
         state_ = TapStates::kTap;
       }
       break;
 
     case TapStates::kTap:
       if (pressed) {
-        report.AddKeycode(tap_keycode_);
+        ReportAddKeycode(tap_keycode_);
         TimerStart(&timer_);
         state_ = kWaitTapRelease2;
       } else {
@@ -66,7 +66,7 @@ void TapKeyAction::Execute(Event *ev) {
       if (timeout) {
         state_ = kStart;
       } else if (pressed) {
-        report.AddKeycode(tap_keycode_);
+        ReportAddKeycode(tap_keycode_);
         TimerStart(&timer_);
         state_ = kWaitTapRelease2;
       }
@@ -74,27 +74,27 @@ void TapKeyAction::Execute(Event *ev) {
 
     case TapStates::kWaitTapRelease2:
       if (other_key_pressed) {
-        report.RemoveKeycode(tap_keycode_);
-        report.AddKeycode(hold_keycode_);
+        ReportRemoveKeycode(tap_keycode_);
+        ReportAddKeycode(hold_keycode_);
         state_ = TapStates::kHold;
       } else if (timeout) {
         state_ = TapStates::kTapHold;
       } else if (released) {
-        report.RemoveKeycode(tap_keycode_);
+        ReportRemoveKeycode(tap_keycode_);
         state_ = TapStates::kTap;
       }
       break;
 
     case TapStates::kTapHold:
       if (released) {
-        report.RemoveKeycode(tap_keycode_);
+        ReportRemoveKeycode(tap_keycode_);
         state_ = kStart;
       }
       break;
 
     case TapStates::kHold:
       if (released) {
-        report.RemoveKeycode(hold_keycode_);
+        ReportRemoveKeycode(hold_keycode_);
         state_ = kStart;
       }
       break;
