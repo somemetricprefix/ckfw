@@ -56,8 +56,6 @@ USB_ClassInfo_CDC_Device_t console_interface = {
 static u16 idle_time = 500;
 static u16 idle_time_remaining = 0;
 
-static u8 report[REPORT_SIZE];
-
 void UsbInit(void) {
   // Create a regular character stream for the interface so that it can be used
   // with the stdio.h functions.
@@ -66,49 +64,36 @@ void UsbInit(void) {
   USB_Init();
 }
 
-// Resends report when there has been no change for the last idle period.
-static void WriteKeyboardEndpoint(void) {
+void UsbSendReport(bool sync) {
   Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-  if (!Endpoint_IsINReady() || idle_time_remaining > 0)
+  if (!sync && !Endpoint_IsINReady())
     return;
 
-  Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
+  bool change = ReportChanged();
+  if (!change && idle_time_remaining)
+    return;
+
+  Endpoint_Write_Stream_LE(ReportData(), REPORT_SIZE, NULL);
   Endpoint_ClearIN();
+
+  if (change)
+    LOG_DEBUG("report sent");
 
   // Reset idle time.
   idle_time_remaining = idle_time;
 }
 
 void UsbTask(void) {
-  WriteKeyboardEndpoint();
+  UsbSendReport(false);
 
-  // Must throw away unused bytes from the host, or it will lock up while
-  // waiting for the device.
-  CDC_Device_ReceiveByte(&console_interface);
   CDC_Device_USBTask(&console_interface);
   USB_USBTask();
-}
-
-void UsbSendReport(const u8 *report_data) {
-  Endpoint_SelectEndpoint(KEYBOARD_EPADDR);
-
-  // Copy report to internal buffer, so that it can be sent again when idle time
-  // is over.
-  memcpy(report, report_data, REPORT_SIZE);
-
-  Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
-  Endpoint_ClearIN();
-
-  LOG_DEBUG("report sent");
-
-  // Reset idle time.
-  idle_time_remaining = idle_time;
 }
 
 // Registers all endpoints and enables SOF interrupt.
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
-                             KEYBOARD_EPSIZE, 2);
+                             KEYBOARD_EPSIZE, 1);
 
   CDC_Device_ConfigureEndpoints(&console_interface);
 
@@ -131,7 +116,7 @@ void EVENT_USB_Device_ControlRequest(void) {
 
         // Write report data to the control endpoint. Endpoint is cleared
         // automatically.
-        Endpoint_Write_Control_Stream_LE(report, REPORT_SIZE);
+        Endpoint_Write_Control_Stream_LE(ReportData(), REPORT_SIZE);
 
         Endpoint_ClearStatusStage();
       }

@@ -49,7 +49,11 @@ static inline void ReportRemoveKeycode(u8 keycode) {
   ReportKeycodeAction(keycode, false);
 }
 
-void ReportSend(void);
+static inline void ReportSend(void) { UsbSendReport(true); }
+
+bool ReportChanged(void);
+
+u8 *ReportData(void);
 
 #ifdef __cplusplus
 }

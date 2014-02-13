@@ -33,6 +33,8 @@
 
 static u8 report_data[REPORT_SIZE];
 
+static bool changed = false;
+
 static inline bool IsModifier(u8 kc) { return 0xE0 <= kc && kc <= 0xE7; }
 
 void ReportKeycodeAction(u8 keycode, bool add) {
@@ -51,8 +53,15 @@ void ReportKeycodeAction(u8 keycode, bool add) {
     BIT_SET(report_data[index], nth_bit);
   else
     BIT_CLR(report_data[index], nth_bit);
+
+  changed = true;
 }
 
-void ReportSend(void) {
-  UsbSendReport(report_data);
+bool ReportChanged(void) {
+  return changed;
+}
+
+u8 *ReportData(void) {
+  changed = false;
+  return report_data;
 }

@@ -52,6 +52,4 @@ void KeyEvent(Event event) {
       ReportRemoveKeycode(keycode);
       break;
   }
-
-  ReportSend();
 }

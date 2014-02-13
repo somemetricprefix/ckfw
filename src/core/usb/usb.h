@@ -31,8 +31,11 @@ void UsbInit(void);
 // Reads and writes endpoint data.
 void UsbTask(void);
 
-// Copies the report to the internal report send queue.
-void UsbSendReport(const u8 *report_data);
+// Sends current report to master if it has changed. If sync is true this
+// function blocks until the report can be sent (max 1ms). If sync is false
+// the report is only sent if the endpoint can be written and the funtion
+// returns immediately.
+void UsbSendReport(bool sync);
 
 // LUFA event handlers.
 void EVENT_USB_Device_ConfigurationChanged(void);

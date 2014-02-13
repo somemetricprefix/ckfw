@@ -22,7 +22,6 @@
 
 #include "matrix.h"
 #include "eventqueue.h"
-#include "report.h"
 #include "usb/usb.h"
 
 __attribute__((weak))
@@ -33,23 +32,26 @@ void KeyEvent(Event event) {}
 
 int main(void)
 {
-  // Disable watchdog if enabled by bootloader/fuses
+  // Disable watchdog if enabled by bootloader/fuses.
   BIT_CLR(MCUSR, WDRF);
   wdt_disable();
 
   // Disable clock division
   clock_prescale_set(clock_div_1);
 
+  // Setup core modules.
   MatrixInit();
   UsbInit();
 
+  // Setep keyboard model specific things.
   Init();
 
   // Enable interrupts.
   sei();
 
   for (;;) {
-    if (!EventQueueEmpty())
+    // Process all events in queue as fast as possible.
+    while (!EventQueueEmpty())
       KeyEvent(EventQueueRead());
 
     // Send reports and debug messages to host.
