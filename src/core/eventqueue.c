@@ -43,7 +43,7 @@ struct Event EventQueueRead(void) {
   if (out == EVENT_QUEUE_SIZE)
     out = 0;
 
-  LOG_DEBUG("event added to queue (%2u,%2u)", event.row, event.column);
+  LOG_DEBUG("event removed from queue (%2u,%2u)", event.row, event.column);
 
   return event;
 }
