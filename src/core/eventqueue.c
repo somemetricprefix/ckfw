@@ -28,7 +28,6 @@ void EventQueueWrite(struct Event event) {
 
   event_buffer[in++] = event;
   count++;
-  LOG_DEBUG("event added to queue (%2u,%2u)", event.row, event.column);
 
   if (in == EVENT_QUEUE_SIZE)
     in = 0;
@@ -42,8 +41,6 @@ struct Event EventQueueRead(void) {
 
   if (out == EVENT_QUEUE_SIZE)
     out = 0;
-
-  LOG_DEBUG("event removed from queue (%2u,%2u)", event.row, event.column);
 
   return event;
 }
