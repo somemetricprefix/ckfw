@@ -32,12 +32,18 @@ extern "C" {
 void ReportKeycodeAction(u8 keycode, bool add);
 
 static inline void ReportAddKeycode(u8 keycode) {
+  if (!keycode)
+    return;
+
   LOG_DEBUG("keycode added (0x%.2X)", keycode);
 
   ReportKeycodeAction(keycode, true);
 }
 
 static inline void ReportRemoveKeycode(u8 keycode) {
+  if (!keycode)
+    return;
+
   LOG_DEBUG("keycode removed (0x%.2X)", keycode);
 
   ReportKeycodeAction(keycode, false);
