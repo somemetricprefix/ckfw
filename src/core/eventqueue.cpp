@@ -34,11 +34,11 @@ void EventQueueWrite(u8 event, u8 row, u8 col) {
     LOG_DEBUG("event added to queue (%2u,%2u)", row, col);
 }
 
-Event EventQueueRead() {
+struct Event EventQueueRead(void) {
   LOG_DEBUG("event removed from queue");
   return event_ring_buffer.Read();
 }
 
-bool EventQueueEmpty() {
+bool EventQueueEmpty(void) {
   return event_ring_buffer.Empty();
 }

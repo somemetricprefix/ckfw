@@ -39,12 +39,16 @@ struct Event {
 };
 
 // Add an event to the event queue.
+#ifdef __cplusplus
+extern "C" void EventQueueWrite(u8 event, u8 row, u8 col);
+#else
 void EventQueueWrite(u8 event, u8 row, u8 col);
+#endif
 
 // Returns a pointer to an Event struct that can be read from.
-Event EventQueueRead();
+struct Event EventQueueRead(void);
 
 // Returns true if the queue is empty, false otherwise.
-bool EventQueueEmpty();
+bool EventQueueEmpty(void);
 
 #endif  // CKFW_SRC_CORE_EVENTQUEUE_H_
