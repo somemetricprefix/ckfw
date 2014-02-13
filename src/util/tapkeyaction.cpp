@@ -26,10 +26,10 @@
 void TapKeyAction::Execute(Event *ev) {
   const bool this_key = (ev->row == row_ && ev->column == column_);
 
-  const bool pressed           = this_key && (ev->event == kEventPressed);
-  const bool released          = this_key && (ev->event == kEventReleased);
-  const bool timeout           = this_key && (ev->event == kEventTimeout);
-  const bool other_key_pressed = !this_key && (ev->event == kEventPressed);
+  const bool pressed           = this_key && (ev->type == kEventPressed);
+  const bool released          = this_key && (ev->type == kEventReleased);
+  const bool timeout           = this_key && (ev->type == kEventTimeout);
+  const bool other_key_pressed = !this_key && (ev->type == kEventPressed);
 
   switch (state_) {
     case TapStates::kStart:

@@ -42,7 +42,7 @@ void TimersUpdate(void) {
   // Safe iteration so that timers can be removed.
   SLIST_FOREACH_SAFE(iter, &timer_list, sl_entry, save) {
     if (--iter->remaining_ticks <= 0) {
-      EventQueueWrite(kEventTimeout, iter->row, iter->column);
+      EventQueueWrite((struct Event){kEventTimeout, iter->row, iter->column});
       SLIST_REMOVE(&timer_list, iter, Timer, sl_entry);
     }
   }

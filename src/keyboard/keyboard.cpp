@@ -43,7 +43,7 @@ void KeyEvent(Event event) {
 
   u8 keycode = keymap[event.row][event.column];
 
-  switch (event.event) {
+  switch (event.type) {
     case kEventPressed:
       report.AddKeycode(keycode);
       break;

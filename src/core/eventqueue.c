@@ -16,29 +16,38 @@
 
 #include "eventqueue.h"
 
-#include "ringbuffer.h"
+// The event queue is implemented with a ringbuffer.
+static u8 in, out, count;
+static struct Event event_buffer[EVENT_QUEUE_SIZE];
 
-static const uint kEventQueueSize = 8;
-static Event event_buffer[kEventQueueSize];
-static RingBuffer<Event> event_ring_buffer(event_buffer, kEventQueueSize);
+void EventQueueWrite(struct Event event) {
+  if (count == EVENT_QUEUE_SIZE) {
+    LOG_WARNING("eventqueue is full (%2u,%2u)", event.row, event.column);
+    return;
+  }
 
-void EventQueueWrite(u8 event, u8 row, u8 col) {
-  ASSERT(event == kEventPressed ||
-         event == kEventReleased ||
-         event == kEventTimeout);
+  event_buffer[in++] = event;
+  count++;
+  LOG_DEBUG("event added to queue (%2u,%2u)", event.row, event.column);
 
-  bool ok = event_ring_buffer.Write({event, row, col});
-  if (!ok)
-    LOG_WARNING("eventqueue is full (%2u,%2u)", row, col);
-  else
-    LOG_DEBUG("event added to queue (%2u,%2u)", row, col);
+  if (in == EVENT_QUEUE_SIZE)
+    in = 0;
 }
 
 struct Event EventQueueRead(void) {
-  LOG_DEBUG("event removed from queue");
-  return event_ring_buffer.Read();
+  ASSERT(!EventQueueEmpty());
+
+  struct Event event = event_buffer[out++];
+  count--;
+
+  if (out == EVENT_QUEUE_SIZE)
+    out = 0;
+
+  LOG_DEBUG("event added to queue (%2u,%2u)", event.row, event.column);
+
+  return event;
 }
 
 bool EventQueueEmpty(void) {
-  return event_ring_buffer.Empty();
+  return (count == 0);
 }
