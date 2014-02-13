@@ -74,22 +74,19 @@ static void WriteKeyboardEndpoint(void) {
 
   Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
   Endpoint_ClearIN();
+
+  // Reset idle time.
+  idle_time_remaining = idle_time;
 }
 
-static void UpdateConsole(void) {
+void UsbTask(void) {
+  WriteKeyboardEndpoint();
+
   // Must throw away unused bytes from the host, or it will lock up while
   // waiting for the device.
   CDC_Device_ReceiveByte(&console_interface);
   CDC_Device_USBTask(&console_interface);
-}
-
-void UsbTask(void) {
   USB_USBTask();
-  if (USB_DeviceState != DEVICE_STATE_Configured)
-    return;
-
-  WriteKeyboardEndpoint();
-  UpdateConsole();
 }
 
 void UsbSendReport(const u8 *report_data) {
@@ -102,13 +99,17 @@ void UsbSendReport(const u8 *report_data) {
   Endpoint_Write_Stream_LE(report, REPORT_SIZE, NULL);
   Endpoint_ClearIN();
 
+  LOG_DEBUG("report sent");
+
+  // Reset idle time.
   idle_time_remaining = idle_time;
 }
 
 // Registers all endpoints and enables SOF interrupt.
 void EVENT_USB_Device_ConfigurationChanged(void) {
   Endpoint_ConfigureEndpoint(KEYBOARD_EPADDR, EP_TYPE_INTERRUPT,
-                             KEYBOARD_EPSIZE, 1);
+                             KEYBOARD_EPSIZE, 2);
+
   CDC_Device_ConfigureEndpoints(&console_interface);
 
   USB_Device_EnableSOFEvents();
