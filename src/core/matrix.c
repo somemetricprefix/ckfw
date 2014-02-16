@@ -87,13 +87,13 @@ void MatrixUpdate(void) {
       // Apply mask to get the 6 state bits.
       u8 key = key_matrix[i][j] & 0b00111111;
 
-      // Check for change between 6th and 5th bit. If the key was stable for
-      // 5 cycles after that set pressed or released bit.
-      if (key == 0b011111) {  // 0 -> 1 indicates key press.
+      // Check for change of the last two bits. Set pressed or released bit if
+      // key was stable for five cycles before change.
+      if (key == 0b000001) {  // 0 -> 1 indicates key press.
         LOG_DEBUG("key pressed (%2u,%2u)", i, j);
 
         EventQueueWrite((struct Event){kEventPressed, i, j});
-      } else if (key == 0b100000) {  // 1 -> 0 indicates key release.
+      } else if (key == 0b111110) {  // 1 -> 0 indicates key release.
         LOG_DEBUG("key released (%2u,%2u)", i, j);
 
         EventQueueWrite((struct Event){kEventReleased, i, j});
