@@ -21,7 +21,7 @@ struct Event;
 
 class KeyActionInterface {
  public:
-  virtual void Execute(Event *ev) = 0;
+  virtual void Execute(const Event *ev) = 0;
 };
 
 #endif  // CKFW_SRC_UTIL_KEYINTERFACE_H

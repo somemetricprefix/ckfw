@@ -33,8 +33,8 @@ static const u8 keymap[MATRIX_NUM_ROWS][MATRIX_NUM_COLUMNS] =  {
 
 static TapKeyAction actions[] = {
   { 3, 6, KC_BSPACE, KC_RSHIFT },
-  { 3, 4, KC_ENTER, KC_LCTRL },
-  { 3, 2, KC_TAB, KC_LALT },
+  // { 3, 4, KC_ENTER, KC_LCTRL },
+  // { 3, 2, KC_TAB, KC_LALT },
 };
 
 void KeyEvent(Event event) {

@@ -34,34 +34,22 @@ class TapKeyAction : public KeyActionInterface {
   // Maximum value is 255 because this is a unsigned 8bit value.
   static const uint kTapThreshold = 200;
 
-  constexpr TapKeyAction(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
-      : row_(row),
-        column_(col),
-        tap_keycode_(tap_keycode),
-        hold_keycode_(hold_keycode),
-        timer_{kTapThreshold, row, col},
-        state_(kStart) {}
+  TapKeyAction(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode);
 
-  virtual void Execute(Event *event);
+  virtual void Execute(const Event *event);
 
  private:
-  enum TapStates {
-    kStart,
-    kWaitTapRelease1,
-    kTap,
-    kWaitTapPress,
-    kWaitTapRelease2,
-    kTapHold,
-    kHold,
-  };
+  char GetEventCharacter(const Event *ev) const;
 
   const u8 row_;
   const u8 column_;
   const u8 tap_keycode_;
   const u8 hold_keycode_;
 
+  u8 current_hold_keycode_;
+
   Timer timer_;
-  u8 state_;
+  int cs;  // Current state variable for ragel.
 
   DISALLOW_COPY_AND_ASSIGN(TapKeyAction);
 };
