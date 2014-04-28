@@ -45,6 +45,9 @@ struct Timer {
 // Starts a timer by attaching it to the timer List.
 void TimerStart(struct Timer *timer);
 
+// Stops a timer by resetting it’s timeout and removing it from the timer List.
+void TimerStop(struct Timer *timer);
+
 // Updates all timers in list. This is called every millisecond in the core.
 // Should not be called by any user code.
 void TimersUpdate(void);

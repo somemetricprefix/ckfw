@@ -27,13 +27,19 @@ void TimerStart(struct Timer *timer) {
   // Only insert timer to list if it’s not active already.
   if (timer->remaining_ticks == 0) {
     SLIST_INSERT_HEAD(&timer_list, timer, sl_entry);
-    LOG_WARNING("timer started (%2u,%2u)", timer->row, timer->column);
+    LOG_DEBUG("timer started (%2u,%2u)", timer->row, timer->column);
   } else {
     LOG_WARNING("timer restarted while active (%2u,%2u)",
                 timer->row, timer->column);
   }
 
   timer->remaining_ticks = timer->ticks;
+}
+
+void TimerStop(struct Timer *timer) {
+  timer->remaining_ticks = 0;
+  SLIST_REMOVE(&timer_list, timer, Timer, sl_entry);
+  LOG_DEBUG("timer stopped (%2u,%2u)", timer->row, timer->column);
 }
 
 void TimersUpdate(void) {
@@ -44,6 +50,7 @@ void TimersUpdate(void) {
     if (--iter->remaining_ticks <= 0) {
       EventQueueWrite((struct Event){kEventTimeout, iter->row, iter->column});
       SLIST_REMOVE(&timer_list, iter, Timer, sl_entry);
+      LOG_DEBUG("timeout (%2u,%2u)", iter->row, iter->column);
     }
   }
 }
