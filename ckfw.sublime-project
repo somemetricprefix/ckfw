@@ -12,7 +12,7 @@
 		{
 			"name": "make",
 			"cmd": ["make"],
-			"working_dir": "${project_path}/src/keyboard"
+			"working_dir": "${project_path}/src"
 		}
 	],
 }

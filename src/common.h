@@ -32,12 +32,6 @@ typedef unsigned int uint;
 #define BIT_CLR(var, bit) ((var) &= ~(1 << (bit)))
 #define BIT_IS_SET(var, bit) ((var) & (1 << bit))
 
-// A macro to disallow the copy constructor and operator= functions
-// This should be used in the private: declarations for a class
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);               \
-  void operator=(const TypeName&)
-
 #include <LUFA/Drivers/USB/USB.h>
 #include <avr/pgmspace.h>
 #include <stdio.h>

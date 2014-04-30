@@ -28,7 +28,7 @@ __attribute__((weak))
 void Init() {}
 
 __attribute__((weak))
-void KeyEvent(Event event) {}
+void KeyEvent(struct Event event) {}
 
 int main(void)
 {

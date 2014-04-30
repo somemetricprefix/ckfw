@@ -14,46 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "tapkeyaction.h"
+#include "tapkey.h"
 
-#include "core/eventqueue.h"
-#include "core/matrix.h"
-#include "core/report.h"
-#include "core/usb/usb.h"
+#include "eventqueue.h"
+#include "matrix.h"
+#include "report.h"
+#include "usb/usb.h"
 
 %%{
   machine tapkey;
-  access this->;
+  access tk->;
 
   action Tap {
-    ReportAddKeycode(tap_keycode_);
+    ReportAddKeycode(tk->tap_keycode);
     ReportSend();
-    ReportRemoveKeycode(tap_keycode_);
+    ReportRemoveKeycode(tk->tap_keycode);
   }
 
-  action StartTimer { TimerStart(&timer_); }
+  action StartTimer { TimerStart(&tk->timer); }
 
-  action StopTimer { TimerStop(&timer_); }
+  action StopTimer { TimerStop(&tk->timer); }
 
   action TimerError {
-    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", tk->row, tk->column);
   }
 
   action PressError {
-    LOG_ERROR("Key press event during down state. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Key press event during down state. (%2u,%2u)",
+              tk->row, tk->column);
   }
 
   action ReleaseError {
-    LOG_ERROR("Key release event during up state. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Key release event during up state. (%2u,%2u)",
+              tk->row, tk->column);
   }
 
-  action SetHoldKeycodeHold { LOG_DEBUG("SetHold"); current_hold_keycode_ = hold_keycode_; }
+  action SetHoldKeycodeHold { LOG_DEBUG("SetHold"); tk->current_hold_keycode = tk->hold_keycode; }
 
-  action SetHoldKeycodeTap { LOG_DEBUG("SetTap"); current_hold_keycode_ = tap_keycode_; }
+  action SetHoldKeycodeTap { LOG_DEBUG("SetTap"); tk->current_hold_keycode = tk->tap_keycode; }
 
-  action AddHold { ReportAddKeycode(current_hold_keycode_); }
+  action AddHold { ReportAddKeycode(tk->current_hold_keycode); }
 
-  action RemoveHold { ReportRemoveKeycode(current_hold_keycode_); }
+  action RemoveHold { ReportRemoveKeycode(tk->current_hold_keycode); }
 
   main := (
     start: ( 'p' @SetHoldKeycodeHold @StartTimer -> pressing
@@ -84,38 +86,16 @@
 
 %% write data;
 
-TapKeyAction::TapKeyAction(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
-    : row_(row),
-      column_(col),
-      tap_keycode_(tap_keycode),
-      hold_keycode_(hold_keycode),
-      timer_{kTapThreshold, row, col} {
-  %% write init;
-}
-
-void TapKeyAction::Execute(const Event *ev) {
-  char event_character = GetEventCharacter(ev);
-
-  LOG_DEBUG("%c", event_character);
-
-  const char *p = &event_character;
-  const char *pe = p + 1;
-
-  %% write exec;
-}
-
 // Translate event to a character.
-char TapKeyAction::GetEventCharacter(const Event *ev) const {
-  const bool this_key = (ev->row == row_ && ev->column == column_);
-
+static char GetEventCharacter(struct Event ev, bool this_key) {
   if (!this_key) {
-    if (ev->type == kEventPressed)
+    if (ev.type == kEventPressed)
       return 'o';
     else
       return '\0';
   }
 
-  switch (ev->type) {
+  switch (ev.type) {
     case kEventPressed:
       return 'p';
     case kEventReleased:
@@ -126,4 +106,26 @@ char TapKeyAction::GetEventCharacter(const Event *ev) const {
 
   /* NOTREACHED */
   return '\0';
+}
+
+void TapKeyInit(struct TapKey *tk, u8 row, u8 column, u8 tap_keycode,
+                u8 hold_keycode) {
+  tk->row = row;
+  tk->column = column;
+  tk->tap_keycode = tap_keycode;
+  tk->hold_keycode = hold_keycode;
+
+  %% write init;
+}
+
+void TapKeyExecute(struct TapKey *tk, struct Event ev) {
+  const bool this_key = (ev.row == tk->row && ev.column == tk->column);
+  char event_character = GetEventCharacter(ev, this_key);
+
+  LOG_DEBUG("%c", event_character);
+
+  const char *p = &event_character;
+  const char *pe = p + 1;
+
+  %% write exec;
 }

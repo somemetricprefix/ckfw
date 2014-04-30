@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "core/eventqueue.h"
-#include "core/matrix.h"
-#include "core/report.h"
-#include "util/keycodes.h"
-#include "util/tapkeyaction.h"
+#include "eventqueue.h"
+#include "matrix.h"
+#include "report.h"
+#include "keycodes.h"
+#include "tapkey.h"
 
 // BuTECK layout
 // B U . , X P C L M F
@@ -31,15 +31,14 @@ static const u8 keymap[MATRIX_NUM_ROWS][MATRIX_NUM_COLUMNS] =  {
   { 0, 0, 0, KC_SPC, 0, 0, 0, 0, 0, 0 },
 };
 
-static TapKeyAction actions[] = {
-  { 3, 6, KC_BSPACE, KC_RSHIFT },
-  // { 3, 4, KC_ENTER, KC_LCTRL },
-  // { 3, 2, KC_TAB, KC_LALT },
-};
+static struct TapKey tab_keys[1];
 
-void KeyEvent(Event event) {
-  for (TapKeyAction &action : actions)
-    action.Execute(&event);
+void Init(void) {
+  TapKeyInit(&tab_keys[0], 3, 6, KC_BSPACE, KC_LSHIFT);
+}
+
+void KeyEvent(struct Event event) {
+  TapKeyExecute(&tab_keys[0], event);
 
   u8 keycode = keymap[event.row][event.column];
 

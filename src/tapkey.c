@@ -1,5 +1,5 @@
 
-#line 1 "./tapkeyaction.cpp.rl"
+#line 1 "tapkey.rl"
 /*
  * Copyright (c) 2013 somemetricprefix <somemetricprefix+code@gmail.com>
  *
@@ -16,19 +16,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "tapkeyaction.h"
+#include "tapkey.h"
 
-#include "core/eventqueue.h"
-#include "core/matrix.h"
-#include "core/report.h"
-#include "core/usb/usb.h"
-
-
-#line 83 "./tapkeyaction.cpp.rl"
+#include "eventqueue.h"
+#include "matrix.h"
+#include "report.h"
+#include "usb/usb.h"
 
 
+#line 85 "tapkey.rl"
 
-#line 27 ".\\tapkeyaction.cpp"
+
+
+#line 27 "tapkey.c"
 static const char _tapkey_actions[] = {
 	0, 1, 2, 1, 3, 1, 4, 1, 
 	5, 1, 8, 1, 9, 2, 6, 1, 
@@ -77,25 +77,49 @@ static const int tapkey_error = 0;
 static const int tapkey_en_main = 1;
 
 
-#line 86 "./tapkeyaction.cpp.rl"
+#line 88 "tapkey.rl"
 
-TapKeyAction::TapKeyAction(u8 row, u8 col, u8 tap_keycode, u8 hold_keycode)
-    : row_(row),
-      column_(col),
-      tap_keycode_(tap_keycode),
-      hold_keycode_(hold_keycode),
-      timer_{kTapThreshold, row, col} {
-  
-#line 81 ".\\tapkeyaction.cpp"
-	{
-	 this->cs = tapkey_start;
-	}
+// Translate event to a character.
+static char GetEventCharacter(struct Event ev, bool this_key) {
+  if (!this_key) {
+    if (ev.type == kEventPressed)
+      return 'o';
+    else
+      return '\0';
+  }
 
-#line 94 "./tapkeyaction.cpp.rl"
+  switch (ev.type) {
+    case kEventPressed:
+      return 'p';
+    case kEventReleased:
+      return 'r';
+    case kEventTimeout:
+      return 't';
+  }
+
+  /* NOTREACHED */
+  return '\0';
 }
 
-void TapKeyAction::Execute(const Event *ev) {
-  char event_character = GetEventCharacter(ev);
+void TapKeyInit(struct TapKey *tk, u8 row, u8 column, u8 tap_keycode,
+                u8 hold_keycode) {
+  tk->row = row;
+  tk->column = column;
+  tk->tap_keycode = tap_keycode;
+  tk->hold_keycode = hold_keycode;
+
+  
+#line 104 "tapkey.c"
+	{
+	 tk->cs = tapkey_start;
+	}
+
+#line 119 "tapkey.rl"
+}
+
+void TapKeyExecute(struct TapKey *tk, struct Event ev) {
+  const bool this_key = (ev.row == tk->row && ev.column == tk->column);
+  char event_character = GetEventCharacter(ev, this_key);
 
   LOG_DEBUG("%c", event_character);
 
@@ -103,7 +127,7 @@ void TapKeyAction::Execute(const Event *ev) {
   const char *pe = p + 1;
 
   
-#line 94 ".\\tapkeyaction.cpp"
+#line 118 "tapkey.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -113,13 +137,13 @@ void TapKeyAction::Execute(const Event *ev) {
 
 	if ( p == pe )
 		goto _test_eof;
-	if (  this->cs == 0 )
+	if (  tk->cs == 0 )
 		goto _out;
 _resume:
-	_keys = _tapkey_trans_keys + _tapkey_key_offsets[ this->cs];
-	_trans = _tapkey_index_offsets[ this->cs];
+	_keys = _tapkey_trans_keys + _tapkey_key_offsets[ tk->cs];
+	_trans = _tapkey_index_offsets[ tk->cs];
 
-	_klen = _tapkey_single_lengths[ this->cs];
+	_klen = _tapkey_single_lengths[ tk->cs];
 	if ( _klen > 0 ) {
 		const char *_lower = _keys;
 		const char *_mid;
@@ -142,7 +166,7 @@ _resume:
 		_trans += _klen;
 	}
 
-	_klen = _tapkey_range_lengths[ this->cs];
+	_klen = _tapkey_range_lengths[ tk->cs];
 	if ( _klen > 0 ) {
 		const char *_lower = _keys;
 		const char *_mid;
@@ -165,7 +189,7 @@ _resume:
 	}
 
 _match:
-	 this->cs = _tapkey_trans_targs[_trans];
+	 tk->cs = _tapkey_trans_targs[_trans];
 
 	if ( _tapkey_trans_actions[_trans] == 0 )
 		goto _again;
@@ -177,61 +201,63 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 28 "./tapkeyaction.cpp.rl"
+#line 28 "tapkey.rl"
 	{
-    ReportAddKeycode(tap_keycode_);
+    ReportAddKeycode(tk->tap_keycode);
     ReportSend();
-    ReportRemoveKeycode(tap_keycode_);
+    ReportRemoveKeycode(tk->tap_keycode);
   }
 	break;
 	case 1:
-#line 34 "./tapkeyaction.cpp.rl"
-	{ TimerStart(&timer_); }
+#line 34 "tapkey.rl"
+	{ TimerStart(&tk->timer); }
 	break;
 	case 2:
-#line 36 "./tapkeyaction.cpp.rl"
-	{ TimerStop(&timer_); }
+#line 36 "tapkey.rl"
+	{ TimerStop(&tk->timer); }
 	break;
 	case 3:
-#line 38 "./tapkeyaction.cpp.rl"
+#line 38 "tapkey.rl"
 	{
-    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", tk->row, tk->column);
   }
 	break;
 	case 4:
-#line 42 "./tapkeyaction.cpp.rl"
+#line 42 "tapkey.rl"
 	{
-    LOG_ERROR("Key press event during down state. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Key press event during down state. (%2u,%2u)",
+              tk->row, tk->column);
   }
 	break;
 	case 5:
-#line 46 "./tapkeyaction.cpp.rl"
+#line 47 "tapkey.rl"
 	{
-    LOG_ERROR("Key release event during up state. (%2u,%2u)", row_, column_);
+    LOG_ERROR("Key release event during up state. (%2u,%2u)",
+              tk->row, tk->column);
   }
 	break;
 	case 6:
-#line 50 "./tapkeyaction.cpp.rl"
-	{ LOG_DEBUG("SetHold"); current_hold_keycode_ = hold_keycode_; }
+#line 52 "tapkey.rl"
+	{ LOG_DEBUG("SetHold"); tk->current_hold_keycode = tk->hold_keycode; }
 	break;
 	case 7:
-#line 52 "./tapkeyaction.cpp.rl"
-	{ LOG_DEBUG("SetTap"); current_hold_keycode_ = tap_keycode_; }
+#line 54 "tapkey.rl"
+	{ LOG_DEBUG("SetTap"); tk->current_hold_keycode = tk->tap_keycode; }
 	break;
 	case 8:
-#line 54 "./tapkeyaction.cpp.rl"
-	{ ReportAddKeycode(current_hold_keycode_); }
+#line 56 "tapkey.rl"
+	{ ReportAddKeycode(tk->current_hold_keycode); }
 	break;
 	case 9:
-#line 56 "./tapkeyaction.cpp.rl"
-	{ ReportRemoveKeycode(current_hold_keycode_); }
+#line 58 "tapkey.rl"
+	{ ReportRemoveKeycode(tk->current_hold_keycode); }
 	break;
-#line 206 ".\\tapkeyaction.cpp"
+#line 232 "tapkey.c"
 		}
 	}
 
 _again:
-	if (  this->cs == 0 )
+	if (  tk->cs == 0 )
 		goto _out;
 	if ( ++p != pe )
 		goto _resume;
@@ -239,29 +265,5 @@ _again:
 	_out: {}
 	}
 
-#line 105 "./tapkeyaction.cpp.rl"
-}
-
-// Translate event to a character.
-char TapKeyAction::GetEventCharacter(const Event *ev) const {
-  const bool this_key = (ev->row == row_ && ev->column == column_);
-
-  if (!this_key) {
-    if (ev->type == kEventPressed)
-      return 'o';
-    else
-      return '\0';
-  }
-
-  switch (ev->type) {
-    case kEventPressed:
-      return 'p';
-    case kEventReleased:
-      return 'r';
-    case kEventTimeout:
-      return 't';
-  }
-
-  /* NOTREACHED */
-  return '\0';
+#line 131 "tapkey.rl"
 }
