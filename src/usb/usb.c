@@ -69,15 +69,11 @@ void UsbSendReport(bool sync) {
   if (!sync && !Endpoint_IsINReady())
     return;
 
-  bool change = ReportChanged();
-  if (!change && idle_time_remaining)
+  if (!ReportChanged() && idle_time_remaining)
     return;
 
   Endpoint_Write_Stream_LE(ReportData(), REPORT_SIZE, NULL);
   Endpoint_ClearIN();
-
-  if (change)
-    LOG_DEBUG("report sent");
 
   // Reset idle time.
   idle_time_remaining = idle_time;
