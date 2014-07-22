@@ -20,10 +20,6 @@
 #include "common.h"
 #include "usb/usb.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // The HID report is an encoded set of keycodes that is transferred over usb.
 // This file defines funtions to translate keycodes into the report format.
 
@@ -54,9 +50,5 @@ static inline void ReportSend(void) { UsbSendReport(true); }
 bool ReportChanged(void);
 
 u8 *ReportData(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // CKFW_SRC_CORE_REPORT_H_

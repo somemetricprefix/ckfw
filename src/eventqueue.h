@@ -19,10 +19,6 @@
 
 #include "common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Maximum number of event the queue can hold.
 #define EVENT_QUEUE_SIZE 16
 
@@ -50,9 +46,5 @@ Event EventQueueRead(void);
 
 // Returns true if the queue is empty, false otherwise.
 bool EventQueueEmpty(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // CKFW_SRC_CORE_EVENTQUEUE_H_

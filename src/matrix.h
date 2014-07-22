@@ -20,10 +20,6 @@
 #include "common.h"
 #include "config.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Macro magic to determine the number of row and port pins.
 #define ID(port, bit) kPort##port##bit
 #define AS_STRUCT(port, bit) u8 ID(port, bit);
@@ -38,9 +34,5 @@ void MatrixInit(void);
 
 // Updates the keys with the current key states.
 void MatrixUpdate(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // CKFW_SRC_CORE_MATRIX_H_

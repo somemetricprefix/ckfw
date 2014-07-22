@@ -21,10 +21,6 @@
 
 #include "../common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Initializes all internal usb resources.
 void UsbInit(void);
 
@@ -41,9 +37,5 @@ void UsbSendReport(bool sync);
 void EVENT_USB_Device_ConfigurationChanged(void);
 void EVENT_USB_Device_ControlRequest(void);
 void EVENT_USB_Device_StartOfFrame(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // CFKW_SRC_USB_USB_H_

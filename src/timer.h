@@ -20,10 +20,6 @@
 #include "common.h"
 #include "queue.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // This struct represents a fixed timer. Because the timer generates an event
 // after timeout it needs to be bound to a key as identification. When the
 // TimerStart() function is called the timer is inserted into the active timer
@@ -51,9 +47,5 @@ void TimerStop(Timer *timer);
 // Updates all timers in list. This is called every millisecond in the core.
 // Should not be called by any user code.
 void TimersUpdate(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // CKFW_SRC_CORE_TIMER_H_
