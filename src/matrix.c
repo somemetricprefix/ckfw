@@ -92,11 +92,11 @@ void MatrixUpdate(void) {
       if (key == 0b000001) {  // 0 -> 1 indicates key press.
         LOG_DEBUG("key pressed (%2u,%2u)", i, j);
 
-        EventQueueWrite((struct Event){kEventPressed, i, j});
+        EventQueueWrite((Event){kEventPressed, i, j});
       } else if (key == 0b111110) {  // 1 -> 0 indicates key release.
         LOG_DEBUG("key released (%2u,%2u)", i, j);
 
-        EventQueueWrite((struct Event){kEventReleased, i, j});
+        EventQueueWrite((Event){kEventReleased, i, j});
       }
     }
   }

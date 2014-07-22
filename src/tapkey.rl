@@ -87,7 +87,7 @@
 %% write data;
 
 // Translate event to a character.
-static char GetEventCharacter(struct Event ev, bool this_key) {
+static char GetEventCharacter(Event ev, bool this_key) {
   if (!this_key) {
     if (ev.type == kEventPressed)
       return 'o';
@@ -118,7 +118,7 @@ void TapKeyInit(struct TapKey *tk, u8 row, u8 column, u8 tap_keycode,
   %% write init;
 }
 
-void TapKeyExecute(struct TapKey *tk, struct Event ev) {
+void TapKeyExecute(struct TapKey *tk, Event ev) {
   const bool this_key = (ev.row == tk->row && ev.column == tk->column);
   char event_character = GetEventCharacter(ev, this_key);
 

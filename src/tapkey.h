@@ -52,6 +52,6 @@ void TapKeyInit(struct TapKey *tk,
                 u8 row, u8 col, u8 tap_keycode, u8 hold_keycode);
 
 // Send event to tap key state machine.
-void TapKeyExecute(struct TapKey *tk, struct Event event);
+void TapKeyExecute(struct TapKey *tk, Event event);
 
 #endif  //  CKFW_SRC_UTIL_TAPKEY_H_

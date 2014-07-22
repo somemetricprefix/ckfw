@@ -37,7 +37,7 @@ void Init(void) {
   TapKeyInit(&tab_keys[0], 3, 6, KC_BSPACE, KC_LSHIFT);
 }
 
-void KeyEvent(struct Event event) {
+void KeyEvent(Event event) {
   TapKeyExecute(&tab_keys[0], event);
 
   u8 keycode = keymap[event.row][event.column];

@@ -18,9 +18,9 @@
 
 // The event queue is implemented with a ringbuffer.
 static u8 in, out, count;
-static struct Event event_buffer[EVENT_QUEUE_SIZE];
+static Event event_buffer[EVENT_QUEUE_SIZE];
 
-void EventQueueWrite(struct Event event) {
+void EventQueueWrite(Event event) {
   if (count == EVENT_QUEUE_SIZE) {
     LOG_WARNING("eventqueue is full (%2u,%2u)", event.row, event.column);
     return;
@@ -33,10 +33,10 @@ void EventQueueWrite(struct Event event) {
     in = 0;
 }
 
-struct Event EventQueueRead(void) {
+Event EventQueueRead(void) {
   ASSERT(!EventQueueEmpty());
 
-  struct Event event = event_buffer[out++];
+  Event event = event_buffer[out++];
   count--;
 
   if (out == EVENT_QUEUE_SIZE)

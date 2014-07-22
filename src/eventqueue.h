@@ -36,17 +36,17 @@ enum {
 };
 
 // Events are passed by value because they have the same size as a pointer.
-struct Event {
+typedef struct event {
   uint type    : 4;
   uint row     : 6;
   uint column  : 6;
-};
+} Event;
 
 // Add an event to the event queue.
-void EventQueueWrite(struct Event event);
+void EventQueueWrite(Event event);
 
 // Removes oldest event from the event queue.
-struct Event EventQueueRead(void);
+Event EventQueueRead(void);
 
 // Returns true if the queue is empty, false otherwise.
 bool EventQueueEmpty(void);
