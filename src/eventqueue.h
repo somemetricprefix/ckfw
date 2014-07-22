@@ -37,9 +37,9 @@ enum {
 
 // Events are passed by value because they have the same size as a pointer.
 typedef struct event {
-  uint type    : 4;
-  uint row     : 6;
-  uint column  : 6;
+  uint type;
+  uint row;
+  uint column;
 } Event;
 
 // Add an event to the event queue.
