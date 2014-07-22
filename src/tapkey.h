@@ -42,7 +42,7 @@ struct TapKey {
   u8 hold_keycode;
 
   // Private
-  struct Timer timer;
+  Timer timer;
   u8 current_hold_keycode;
   int cs;  // Current state variable for ragel.
 };

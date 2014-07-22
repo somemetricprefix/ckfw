@@ -30,7 +30,7 @@ extern "C" {
 // list. After the timer finished it is removed from this list and a timer event
 // is generated.
 // The timer must not be deallocated while it’s active.
-struct Timer {
+typedef struct timer {
   // Timeout in milli seconds.
   u16 ticks;
 
@@ -39,14 +39,14 @@ struct Timer {
   u8 column : 4;
 
   u16 remaining_ticks;
-  SLIST_ENTRY(Timer) sl_entry;
-};
+  SLIST_ENTRY(timer) sl_entry;
+} Timer;
 
 // Starts a timer by attaching it to the timer List.
-void TimerStart(struct Timer *timer);
+void TimerStart(Timer *timer);
 
 // Stops a timer by resetting it’s timeout and removing it from the timer List.
-void TimerStop(struct Timer *timer);
+void TimerStop(Timer *timer);
 
 // Updates all timers in list. This is called every millisecond in the core.
 // Should not be called by any user code.
