@@ -35,8 +35,8 @@ typedef struct timer {
   u16 ticks;
 
   // Key coordinates the timer is bound to.
-  u8 row : 4;
-  u8 column : 4;
+  u8 row;
+  u8 column;
 
   u16 remaining_ticks;
   SLIST_ENTRY(timer) sl_entry;
