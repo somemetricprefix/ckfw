@@ -17,15 +17,19 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/power.h>
-#include <avr/sleep.h>
 #include <avr/wdt.h>
+#include <stdio.h>
+#include <util/delay.h>
 
+#include "common.h"
 #include "matrix.h"
 #include "eventqueue.h"
 #include "usb/usb.h"
 
+
+
 __attribute__((weak))
-void Init() {}
+void Init(void) {}
 
 __attribute__((weak))
 void KeyEvent(Event event) {}
@@ -43,7 +47,7 @@ int main(void)
   MatrixInit();
   UsbInit();
 
-  // Setep keyboard model specific things.
+  // Setup keyboard model specific things.
   Init();
 
   // Enable interrupts.
@@ -51,8 +55,18 @@ int main(void)
 
   for (;;) {
     // Process all events in queue as fast as possible.
-    while (!EventQueueEmpty())
+    while (!EventQueueEmpty()) {
       KeyEvent(EventQueueRead());
+    }
+
+    // Enter bootloader mode if requested over serieal port.
+    // getc() is nonblocking here.
+    if (getc(&console) == 'b') {
+      USB_Disable();
+      cli();
+      _delay_ms(100);  // Wait for the USB detachment to register on the host.
+      asm volatile("jmp 0x7E00");
+    }
 
     // Send reports and debug messages to host.
     UsbTask();
