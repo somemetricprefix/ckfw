@@ -20,25 +20,29 @@
 #include "keycodes.h"
 #include "tapkey.h"
 
-// BuTECK layout
-// B U . , X P C L M F
-// H I E A O D T R N S
-// K Y Ö Ä Ü J G W V Z
 static const u8 keymap[MATRIX_NUM_ROWS][MATRIX_NUM_COLUMNS] =  {
-  { KC_B, KC_U, KC_DOT, KC_COMM, KC_X, KC_P, KC_C, KC_L, KC_M, KC_F },
-  { KC_H, KC_I, KC_E, KC_A, KC_O, KC_D, KC_T, KC_R, KC_N, KC_S },
-  { KC_K, KC_Z, KC_SCLN, KC_QUOT, KC_LBRC, KC_J, KC_G, KC_W, KC_V, KC_Y },
-  { 0, 0, 0, KC_SPC, 0, 0, 0, 0, 0, 0 },
+  { KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_NO,   KC_NO,
+    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P    },
+  { KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_NO,   KC_NO,
+    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN },
+  { KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_LBRC, KC_QUOT,
+    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH },
+  { KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_SPC,   KC_NO,   KC_NO,
+    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,  },
 };
 
-static struct TapKey tab_keys[1];
+static struct TapKey tab_keys[3];
 
 void Init(void) {
-  TapKeyInit(&tab_keys[0], 3, 6, KC_BSPACE, KC_LSHIFT);
+  TapKeyInit(&tab_keys[0], 3, 5, KC_ENTER, KC_CAPS);
+  TapKeyInit(&tab_keys[1], 3, 6, KC_BSPACE, KC_RALT);
+  TapKeyInit(&tab_keys[2], 3, 7, KC_BSPACE, KC_RSHIFT);
 }
 
 void KeyEvent(Event event) {
-  TapKeyExecute(&tab_keys[0], event);
+  for (u8 i = 0; i < 3; i++) {
+    TapKeyExecute(&tab_keys[i], event);
+  }
 
   u8 keycode = keymap[event.row][event.column];
 
