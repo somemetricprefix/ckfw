@@ -121,13 +121,11 @@ void TapKeyExecute(struct TapKey *tk, Event ev) {
     return;
   }
 
-  LOG_DEBUG("%c", event_character);
-
   const char *p = &event_character;
   const char *pe = p + 1;
 
   
-#line 118 "tapkey.c"
+#line 116 "tapkey.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -228,11 +226,11 @@ _match:
 	break;
 	case 4:
 #line 46 "tapkey.rl"
-	{ LOG_DEBUG("SetHold"); tk->current_hold_keycode = tk->hold_keycode; }
+	{ tk->current_hold_keycode = tk->hold_keycode; }
 	break;
 	case 5:
 #line 48 "tapkey.rl"
-	{ LOG_DEBUG("SetTap"); tk->current_hold_keycode = tk->tap_keycode; }
+	{ tk->current_hold_keycode = tk->tap_keycode; }
 	break;
 	case 6:
 #line 50 "tapkey.rl"
@@ -242,7 +240,7 @@ _match:
 #line 52 "tapkey.rl"
 	{ ReportRemoveKeycode(tk->current_hold_keycode); }
 	break;
-#line 224 "tapkey.c"
+#line 222 "tapkey.c"
 		}
 	}
 
@@ -255,5 +253,5 @@ _again:
 	_out: {}
 	}
 
-#line 123 "tapkey.rl"
+#line 121 "tapkey.rl"
 }

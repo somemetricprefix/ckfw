@@ -43,9 +43,9 @@
               tk->row, tk->column);
   }
 
-  action SetHoldKeycodeHold { LOG_DEBUG("SetHold"); tk->current_hold_keycode = tk->hold_keycode; }
+  action SetHoldKeycodeHold { tk->current_hold_keycode = tk->hold_keycode; }
 
-  action SetHoldKeycodeTap { LOG_DEBUG("SetTap"); tk->current_hold_keycode = tk->tap_keycode; }
+  action SetHoldKeycodeTap { tk->current_hold_keycode = tk->tap_keycode; }
 
   action AddHold { ReportAddKeycode(tk->current_hold_keycode); }
 
@@ -113,8 +113,6 @@ void TapKeyExecute(struct TapKey *tk, Event ev) {
   if (event_character == '\0') {
     return;
   }
-
-  LOG_DEBUG("%c", event_character);
 
   const char *p = &event_character;
   const char *pe = p + 1;
