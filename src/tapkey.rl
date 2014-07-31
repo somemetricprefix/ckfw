@@ -33,12 +33,6 @@
 
   action StartTimer { TimerStart(&tk->timer); }
 
-  action StopTimer { TimerStop(&tk->timer); }
-
-  action TimerError {
-    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", tk->row, tk->column);
-  }
-
   action PressError {
     LOG_ERROR("Key press event during down state. (%2u,%2u)",
               tk->row, tk->column);
@@ -60,26 +54,22 @@
   main := (
     start: ( 'p' @SetHoldKeycodeHold @StartTimer -> pressing
            | 'r' @ReleaseError -> start
-           | 'o' -> start
-           | 't' @TimerError -> start
+           | 'x' -> start
            ),
 
     pressing: ( 'p' @PressError -> pressing
-              | 'r' @Tap @StopTimer @StartTimer -> releasing
-              | 'o' @AddHold @StopTimer -> holding
-              | 't' @AddHold -> holding
+              | 'r' @Tap @StartTimer -> releasing
+              | 'x' @AddHold -> holding
               ),
 
-    releasing: ( 'p' @SetHoldKeycodeTap @StopTimer @StartTimer -> pressing
+    releasing: ( 'p' @SetHoldKeycodeTap @StartTimer -> pressing
                | 'r' @ReleaseError -> releasing
-               | 'o' @StopTimer -> start
-               | 't' -> start
+               | 'x' -> start
                ),
 
     holding: ( 'p' @PressError -> holding
              | 'r' @RemoveHold -> start
-             | 'o' -> holding
-             | 't' @TimerError -> holding
+             | 'x' -> holding
              )
   );
 }%%
@@ -89,10 +79,7 @@
 // Translate event to a character.
 static char GetEventCharacter(Event ev, bool this_key) {
   if (!this_key) {
-    if (ev.type == kEventPressed)
-      return 'o';
-    else
-      return '\0';
+    return (ev.type == kEventPressed) ? 'x' : '\0';
   }
 
   switch (ev.type) {
@@ -101,7 +88,7 @@ static char GetEventCharacter(Event ev, bool this_key) {
     case kEventReleased:
       return 'r';
     case kEventTimeout:
-      return 't';
+      return 'x';
   }
 
   /* NOTREACHED */
@@ -115,12 +102,17 @@ void TapKeyInit(struct TapKey *tk, u8 row, u8 column, u8 tap_keycode,
   tk->tap_keycode = tap_keycode;
   tk->hold_keycode = hold_keycode;
 
+  TimerInit(&tk->timer, TAP_TIME, row, column);
+
   %% write init;
 }
 
 void TapKeyExecute(struct TapKey *tk, Event ev) {
   const bool this_key = (ev.row == tk->row && ev.column == tk->column);
   char event_character = GetEventCharacter(ev, this_key);
+  if (event_character == '\0') {
+    return;
+  }
 
   LOG_DEBUG("%c", event_character);
 

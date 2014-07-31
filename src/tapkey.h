@@ -31,8 +31,8 @@
 // key in most cases. If it is tapped it acts as backspace. Tapping first and
 // holding afterwards repeats the backspace as long as it is held down.
 
-// A key press and release within kTapThreshold ms is interpreted as tap.
-static const uint kTapThreshold = 200;
+// A key press and release within TAP_TIME ms is interpreted as tap.
+#define TAP_TIME 200
 
 struct TapKey {
   // Public

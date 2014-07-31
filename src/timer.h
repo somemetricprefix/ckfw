@@ -38,11 +38,11 @@ typedef struct timer {
   SLIST_ENTRY(timer) sl_entry;
 } Timer;
 
+// Initializes timer.
+void TimerInit(Timer *timer, u16 ticks, u8 row, u8 column);
+
 // Starts a timer by attaching it to the timer List.
 void TimerStart(Timer *timer);
-
-// Stops a timer by resetting it’s timeout and removing it from the timer List.
-void TimerStop(Timer *timer);
 
 // Updates all timers in list. This is called every millisecond in the core.
 // Should not be called by any user code.

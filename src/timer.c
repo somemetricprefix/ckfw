@@ -20,23 +20,23 @@
 // List that contains all active timers.
 static SLIST_HEAD(list, timer) timer_list = SLIST_HEAD_INITIALIZER(timer_list);
 
+void TimerInit(Timer *timer, u16 ticks, u8 row, u8 column) {
+  timer->ticks = ticks;
+  timer->row = row;
+  timer->column = column;
+  timer->remaining_ticks = 0;
+}
+
 void TimerStart(Timer *timer) {
   // Only insert timer to list if it’s not active already.
   if (timer->remaining_ticks == 0) {
     SLIST_INSERT_HEAD(&timer_list, timer, sl_entry);
     LOG_DEBUG("timer started (%2u,%2u)", timer->row, timer->column);
   } else {
-    LOG_WARNING("timer restarted while active (%2u,%2u)",
-                timer->row, timer->column);
+    LOG_DEBUG("timer restarted (%2u,%2u)", timer->row, timer->column);
   }
 
   timer->remaining_ticks = timer->ticks;
-}
-
-void TimerStop(Timer *timer) {
-  timer->remaining_ticks = 0;
-  SLIST_REMOVE(&timer_list, timer, timer, sl_entry);
-  LOG_DEBUG("timer stopped (%2u,%2u)", timer->row, timer->column);
 }
 
 void TimersUpdate(void) {
