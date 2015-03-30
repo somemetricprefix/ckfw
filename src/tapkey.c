@@ -24,30 +24,28 @@
 #include "usb/usb.h"
 
 
-#line 85 "tapkey.rl"
+#line 75 "tapkey.rl"
 
 
 
 #line 27 "tapkey.c"
 static const char _tapkey_actions[] = {
-	0, 1, 2, 1, 3, 1, 4, 1, 
-	5, 1, 8, 1, 9, 2, 6, 1, 
-	2, 8, 2, 3, 0, 2, 1, 3, 
-	7, 2, 1
+	0, 1, 2, 1, 3, 1, 6, 1, 
+	7, 2, 0, 1, 2, 4, 1, 2, 
+	5, 1
 };
 
 static const char _tapkey_key_offsets[] = {
-	0, 0, 4, 8, 12
+	0, 0, 3, 6, 9
 };
 
 static const char _tapkey_trans_keys[] = {
-	111, 112, 114, 116, 111, 112, 114, 116, 
-	111, 112, 114, 116, 111, 112, 114, 116, 
-	0
+	112, 114, 120, 112, 114, 120, 112, 114, 
+	120, 112, 114, 120, 0
 };
 
 static const char _tapkey_single_lengths[] = {
-	0, 4, 4, 4, 4
+	0, 3, 3, 3, 3
 };
 
 static const char _tapkey_range_lengths[] = {
@@ -55,19 +53,19 @@ static const char _tapkey_range_lengths[] = {
 };
 
 static const char _tapkey_index_offsets[] = {
-	0, 0, 5, 10, 15
+	0, 0, 4, 8, 12
 };
 
 static const char _tapkey_trans_targs[] = {
-	1, 2, 1, 1, 0, 3, 2, 4, 
-	3, 0, 3, 3, 1, 3, 0, 1, 
-	2, 4, 1, 0, 0
+	2, 1, 1, 0, 2, 3, 4, 0, 
+	2, 3, 1, 0, 4, 1, 4, 0, 
+	0
 };
 
 static const char _tapkey_trans_actions[] = {
-	0, 13, 7, 3, 0, 16, 5, 19, 
-	9, 0, 0, 5, 11, 3, 0, 1, 
-	23, 7, 0, 0, 0
+	12, 3, 0, 0, 1, 9, 5, 0, 
+	15, 3, 0, 0, 1, 7, 0, 0, 
+	0
 };
 
 static const int tapkey_start = 1;
@@ -77,15 +75,12 @@ static const int tapkey_error = 0;
 static const int tapkey_en_main = 1;
 
 
-#line 88 "tapkey.rl"
+#line 78 "tapkey.rl"
 
 // Translate event to a character.
 static char GetEventCharacter(Event ev, bool this_key) {
   if (!this_key) {
-    if (ev.type == kEventPressed)
-      return 'o';
-    else
-      return '\0';
+    return (ev.type == kEventPressed) ? 'x' : '\0';
   }
 
   switch (ev.type) {
@@ -94,7 +89,7 @@ static char GetEventCharacter(Event ev, bool this_key) {
     case kEventReleased:
       return 'r';
     case kEventTimeout:
-      return 't';
+      return 'x';
   }
 
   /* NOTREACHED */
@@ -108,26 +103,29 @@ void TapKeyInit(struct TapKey *tk, u8 row, u8 column, u8 tap_keycode,
   tk->tap_keycode = tap_keycode;
   tk->hold_keycode = hold_keycode;
 
+  TimerInit(&tk->timer, TAP_TIME, row, column);
+
   
-#line 104 "tapkey.c"
+#line 101 "tapkey.c"
 	{
 	 tk->cs = tapkey_start;
 	}
 
-#line 119 "tapkey.rl"
+#line 108 "tapkey.rl"
 }
 
 void TapKeyExecute(struct TapKey *tk, Event ev) {
   const bool this_key = (ev.row == tk->row && ev.column == tk->column);
   char event_character = GetEventCharacter(ev, this_key);
-
-  LOG_DEBUG("%c", event_character);
+  if (event_character == '\0') {
+    return;
+  }
 
   const char *p = &event_character;
   const char *pe = p + 1;
 
   
-#line 118 "tapkey.c"
+#line 116 "tapkey.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -214,45 +212,35 @@ _match:
 	break;
 	case 2:
 #line 36 "tapkey.rl"
-	{ TimerStop(&tk->timer); }
-	break;
-	case 3:
-#line 38 "tapkey.rl"
-	{
-    LOG_ERROR("Unexpected timeout received. (%2u,%2u)", tk->row, tk->column);
-  }
-	break;
-	case 4:
-#line 42 "tapkey.rl"
 	{
     LOG_ERROR("Key press event during down state. (%2u,%2u)",
               tk->row, tk->column);
   }
 	break;
-	case 5:
-#line 47 "tapkey.rl"
+	case 3:
+#line 41 "tapkey.rl"
 	{
     LOG_ERROR("Key release event during up state. (%2u,%2u)",
               tk->row, tk->column);
   }
 	break;
+	case 4:
+#line 46 "tapkey.rl"
+	{ tk->current_hold_keycode = tk->hold_keycode; }
+	break;
+	case 5:
+#line 48 "tapkey.rl"
+	{ tk->current_hold_keycode = tk->tap_keycode; }
+	break;
 	case 6:
-#line 52 "tapkey.rl"
-	{ LOG_DEBUG("SetHold"); tk->current_hold_keycode = tk->hold_keycode; }
-	break;
-	case 7:
-#line 54 "tapkey.rl"
-	{ LOG_DEBUG("SetTap"); tk->current_hold_keycode = tk->tap_keycode; }
-	break;
-	case 8:
-#line 56 "tapkey.rl"
+#line 50 "tapkey.rl"
 	{ ReportAddKeycode(tk->current_hold_keycode); }
 	break;
-	case 9:
-#line 58 "tapkey.rl"
+	case 7:
+#line 52 "tapkey.rl"
 	{ ReportRemoveKeycode(tk->current_hold_keycode); }
 	break;
-#line 232 "tapkey.c"
+#line 222 "tapkey.c"
 		}
 	}
 
@@ -265,5 +253,5 @@ _again:
 	_out: {}
 	}
 
-#line 131 "tapkey.rl"
+#line 121 "tapkey.rl"
 }

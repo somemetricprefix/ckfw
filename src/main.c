@@ -26,8 +26,6 @@
 #include "eventqueue.h"
 #include "usb/usb.h"
 
-
-
 __attribute__((weak))
 void Init(void) {}
 
